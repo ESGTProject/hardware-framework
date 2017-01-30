@@ -1,2 +1,5 @@
 2017 Spring Senior Design
-Boa-Lin's branch
+
+Configure the sensors to Rsp3 B.
+
+1. light sensor
