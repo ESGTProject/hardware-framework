@@ -20,26 +20,28 @@ from urllib2 import urlopen
 class ESGT_weather_info:
     def __init__(self):
     # use Atlanta as default
-      self.api_key = 'cca7a9afe7f521c4228b4071ea77e58e'
-      self.city_id = '4180439'
-      self.current_weather_api = 'http://api.openweathermap.org/data/2.5/weather?id='    
-      self.forecast_weather_api = 'http://api.openweathermap.org/data/2.5/forecast?id='
+        self._api_key = 'cca7a9afe7f521c4228b4071ea77e58e'
+        self._city_id = '4180439'
+        self._current_weather_api = 'http://api.openweathermap.org/data/2.5/weather?id='    
+        self._forecast_weather_api = 'http://api.openweathermap.org/data/2.5/forecast?id='
     def time_converter(self, time):
-      converted_time = datetime.datetime.fromtimestamp(
-          int(time)
-      ).strftime('%I:%M %p')
-      return converted_time
+        converted_time = datetime.datetime.fromtimestamp(
+                         int(time)
+                         ).strftime('%I:%M %p')
+        return converted_time
     
     def set_city_id(self, new_id):
-      self.city_id = new_id
+        self._city_id = new_id
+    def set_api_key(self, new_api_key):
+        self._api_key = new_api_key
     def url_builder(self, api):
-      '''
-        current weather url builder, use differt api data 
-      '''
-      unit = 'imperial'  # For Fahrenheit use imperial, for Celsius use metric, and the default is Kelvin.
-      # Search for your city ID here: http://bulk.openweathermap.org/sample/city.list.json.gz
-      full_api_url = api + str(self.city_id) + '&mode=json&units=' + unit + '&APPID=' + self.api_key
-      return full_api_url
+        """
+          current weather url builder, use differt api data 
+        """
+        unit = 'imperial'  # For Fahrenheit use imperial, for Celsius use metric, and the default is Kelvin.
+        # Search for your city ID here: http://bulk.openweathermap.org/sample/city.list.json.gz
+        full_api_url = api + str(self._city_id) + '&mode=json&units=' + unit + '&APPID=' + self._api_key
+        return full_api_url
     def data_fetch(self,full_api_url):
         url = urlopen(full_api_url)
         # output = url.read().decode('utf-8')
@@ -49,12 +51,15 @@ class ESGT_weather_info:
         url.close()
         return raw_api_dict
     def get_json(self):
-      current_weather_data = self.data_fetch(self.url_builder(self.current_weather_api))
-      forecast_weather_data = self.data_fetch(self.url_builder(self.forecast_weather_api))
-      # we only need the first day forcast
-      data = self.data_organizer(current_weather_data,forecast_weather_data)
-      json_array = json.dumps(data)
-      return json_array
+        """
+           return json string for database to use
+        """
+        current_weather_data = self.data_fetch(self.url_builder(self._current_weather_api))
+        forecast_weather_data = self.data_fetch(self.url_builder(self._forecast_weather_api))
+        # we only need the first day forcast
+        data = self.data_organizer(current_weather_data,forecast_weather_data)
+        json_array = json.dumps(data)
+        return json_array
 
     def data_organizer(self,raw_current_api_dict,raw_forecast_api_dict):
         '''
@@ -92,7 +97,7 @@ class ESGT_weather_info:
 
 if __name__ == '__main__':
     try:
-         w = ESGT_weather_info()
-         print w.get_json()
+        w = ESGT_weather_info()
+        print w.get_json()
     except IOError:
         print('no internet')
