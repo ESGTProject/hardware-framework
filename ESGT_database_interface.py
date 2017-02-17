@@ -192,7 +192,7 @@ class ESGTDatabase(PostgreSQLDatabase):
     def select_sensor_data(self, sensor):
         if (self.conn_db is not None) or (self.connect_database() is not None):
             with self.conn_db.cursor() as cur:
-                query = "SELECT {}, {} from {} where {} = (%s) ORDER BY {} ASC".format(
+                query = "SELECT {}, {} from {} where {} = (%s) ORDER BY {} DESC".format(
                     self.COL_SENSORS_VALUE,
                     self.COL_SENSORS_CREATE_TIME,
                     self.TABLE_SENSORS,
@@ -209,14 +209,15 @@ class ESGTDatabase(PostgreSQLDatabase):
         if (self.conn_db is not None) or (self.connect_database() is not None):
             with self.conn_db.cursor() as cur:
                 # TODO: Make query constant and easier to read
-                query = "SELECT {}, {} from {} JOIN {} ON {}={} where {} = (%s)".format(
+                query = "SELECT {}, {} from {} JOIN {} ON {}={} where {} = (%s) ORDER BY {} DESC".format(
                     self.TABLE_BACKLOG + "." + self.COL_BACKLOG_VALUE,
                     self.TABLE_BACKLOG + "." + self.COL_BACKLOG_CREATE_TIME,
                     self.TABLE_BACKLOG,
                     self.TABLE_SENSORS,
                     self.TABLE_SENSORS + "." + self.COL_SENSORS_ID,
                     self.TABLE_BACKLOG + "." + self.COL_BACKLOG_SENSOR_KEY,
-                    self.COL_SENSORS_NAME)
+                    self.COL_SENSORS_NAME,
+                    self.TABLE_BACKLOG + "." + self.COL_BACKLOG_CREATE_TIME)
                 data = (sensor,)
                 cur.execute(query, data)
                 rows = cur.fetchall()

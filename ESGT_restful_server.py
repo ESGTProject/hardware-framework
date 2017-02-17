@@ -38,11 +38,12 @@ def date_handler(obj):
 class ESGTRestfulServer(Resource):
     def get(self, sensor):
         rows = esgt_db.select_backlog_data(sensor)
-        # rows = esgt_db.select_sensor_data(sensor)
-        # TODO: Handle in json serializer
-        print json.dumps(rows[0], default=date_handler)
-
-        return json.loads(json.dumps(rows[0], default=date_handler))
+        elem_array = [None] * len(rows)
+        for i, row in enumerate(rows):
+            dict = row[0]
+            dict["timestamp"] = row[1]
+            elem_array[i] = dict
+        return json.loads(json.dumps(elem_array, default=date_handler))
 
     def put(self, sensor):
         esgt_db.insert_sensor_data(sensor, request.form['data'])
