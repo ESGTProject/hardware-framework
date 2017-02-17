@@ -15,6 +15,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from datetime import datetime
 import random
 import json
+import time
 # import pgpasslib #TODO need password file if not default user
 
 # Formatting strings
@@ -98,7 +99,15 @@ class ESGTDatabase(PostgreSQLDatabase):
     COL_SENSORS_VALUE = 'value'
     COL_SENSORS_CREATE_TIME = 'create_time'
 
-    # ESGT specific functions
+    # Initialization function (connect to database, create table if necessary)
+    def initialize(self):
+        # Connect to database
+        self.connect_database()
+
+        # Create tables if not present
+        self.create_sensor_table() # Must be called before creating backlog table
+        self.create_backlog_table()
+
     # Create sensor table
     def create_sensor_table(self):
         if (self.conn_db is not None) or (self.connect_database() is not None):
@@ -183,11 +192,12 @@ class ESGTDatabase(PostgreSQLDatabase):
     def select_sensor_data(self, sensor):
         if (self.conn_db is not None) or (self.connect_database() is not None):
             with self.conn_db.cursor() as cur:
-                query = "SELECT {}, {} from {} where {} = (%s)".format(
+                query = "SELECT {}, {} from {} where {} = (%s) ORDER BY {} ASC".format(
                     self.COL_SENSORS_VALUE,
                     self.COL_SENSORS_CREATE_TIME,
                     self.TABLE_SENSORS,
-                    self.COL_SENSORS_NAME)
+                    self.COL_SENSORS_NAME,
+                    self.COL_SENSORS_CREATE_TIME)
                 data = (sensor,)
                 cur.execute(query, data)
                 rows = cur.fetchall()
@@ -214,34 +224,23 @@ class ESGTDatabase(PostgreSQLDatabase):
             return rows
 
 def main():
-
     # Database name to connect to
     db_name = DB_ESGT
 
     # Instantiate database
     esgt_db = ESGTDatabase(db_name)
-
-    # Connect to database
-    esgt_db.connect_database()
-
-
-
-    # Create tables if not present
-    esgt_db.create_sensor_table() # TODO: put in initialization code, must come first
-    esgt_db.create_backlog_table()
-
-    # Retrieve data from table TODO: User dictionary cursor?
-    rows = esgt_db.select_sensor_data('light_sensor')
-    print "Total entries: ", len(rows)
+    esgt_db.initialize()
 
     # Test inserting sensor values
     sensor_names = ['light_sensor', 'temp_sensor', 'proximity_sensor']
+    sensor_units = ['lumens', 'C', 'cm']
     print "Insert 10 random entries and retrieve them\n"
-    for i in range(10):
-        for sen in sensor_names:
-            randval = 10 * i + random.uniform(0, 5.0)
-            jsonstr = json.dumps(['data', {'value': randval}])
+    for i in range(20):
+        for index, sen in enumerate(sensor_names):
+            randval = 10 * i + 100 * random.uniform(0, 5.0)
+            jsonstr = json.dumps({'units': sensor_units[index], 'value': randval})
             esgt_db.insert_sensor_data(sen, jsonstr)
+        time.sleep(0.25)
 
     rows = esgt_db.select_sensor_data('light_sensor')
     for row in rows:
