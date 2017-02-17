@@ -46,8 +46,14 @@ class PostgreSQLDatabase(object):
         except psycopg2.Error as e:
             print "Unable to connect to the database {}".format(self.db_name)
             print e
-            return None
-
+            print "Attempting to create database {}".format(self.db_name)
+            try:
+                self.create_database()
+                print "Created database {}".format(self.db_name)
+                self.connect_database()
+            except psycopg2.Error as e:
+                print "Could not create database {}".format(self.db_name)
+                print e
 
     # Create database if it does not exist
     def create_database(self):
@@ -199,20 +205,7 @@ def main():
     # Connect to database
     esgt_db.connect_database()
 
-    # If connection succeeds, continue
-    if esgt_db.conn_db is not None:
-        print "Successfully connected to database {}".format(db_name)
-    else:  # Else, attempts to create database
-        print "Could NOT connect to database {}".format(db_name)
-        print "Attempting to create database {}".format(db_name)
-        try:
-            esgt_db.create_database()
-            print "Created database {}".format(db_name)
-            esgt_db.connect_database()
-        except psycopg2.Error as e:
-            print "Could not create database {}".format(db_name)
-            print e
-            quit()
+
 
     # Create tables if not present
     esgt_db.create_sensor_table() # TODO: put in initialization code, must come first
