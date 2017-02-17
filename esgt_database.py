@@ -183,16 +183,35 @@ class ESGTDatabase(PostgreSQLDatabase):
     def select_sensor_data(self, sensor):
         if (self.conn_db is not None) or (self.connect_database() is not None):
             with self.conn_db.cursor() as cur:
-                query = "SELECT {}, {} from {} where name = (%s)".format(
+                query = "SELECT {}, {} from {} where {} = (%s)".format(
                     self.COL_SENSORS_VALUE,
                     self.COL_SENSORS_CREATE_TIME,
-                    self.TABLE_SENSORS)
+                    self.TABLE_SENSORS,
+                    self.COL_SENSORS_NAME)
                 data = (sensor,)
                 cur.execute(query, data)
                 rows = cur.fetchall()
             self.conn_db.commit()
             return rows
 
+    # Retrieve backlog values for sensor name
+    def select_backlog_data(self, sensor):
+        if (self.conn_db is not None) or (self.connect_database() is not None):
+            with self.conn_db.cursor() as cur:
+                # TODO: Make query constant and easier to read
+                query = "SELECT {}, {} from {} JOIN {} ON {}={} where {} = (%s)".format(
+                    self.TABLE_BACKLOG + "." + self.COL_BACKLOG_VALUE,
+                    self.TABLE_BACKLOG + "." + self.COL_BACKLOG_CREATE_TIME,
+                    self.TABLE_BACKLOG,
+                    self.TABLE_SENSORS,
+                    self.TABLE_SENSORS + "." + self.COL_SENSORS_ID,
+                    self.TABLE_BACKLOG + "." + self.COL_BACKLOG_SENSOR_KEY,
+                    self.COL_SENSORS_NAME)
+                data = (sensor,)
+                cur.execute(query, data)
+                rows = cur.fetchall()
+            self.conn_db.commit()
+            return rows
 
 def main():
 
