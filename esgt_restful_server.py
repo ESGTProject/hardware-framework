@@ -1,11 +1,20 @@
-#!
+##!/usr/bin/python
+
+'''
+File name: database_interface.py
+Author: Kairi Kozuma
+Date created: 02/16/2017
+Date last modified: 02/17/2017
+Python Version: 2.7.11
+'''
+
 # Python restful api
 from flask import Flask, request
 from flask_restful import Resource, Api
+
 import esgt_database
 from esgt_database import ESGTDatabase
 import json
-import datetime
 import random
 
 app = Flask(__name__)
