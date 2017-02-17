@@ -1,7 +1,7 @@
 ##!/usr/bin/python
 
 '''
-File name: database_interface.py
+File name: ESGT_restful_server.py
 Author: Kairi Kozuma
 Date created: 02/16/2017
 Date last modified: 02/17/2017
@@ -12,8 +12,8 @@ Python Version: 2.7.11
 from flask import Flask, request
 from flask_restful import Resource, Api
 
-import esgt_database
-from esgt_database import ESGTDatabase
+import ESGT_database_interface
+from ESGT_database_interface import ESGTDatabase
 import json
 import random
 
@@ -54,7 +54,7 @@ api.add_resource(ESGTRestfulServer, '/<string:sensor>')
 if __name__ == '__main__':
 
     # Instantiate database
-    esgt_db = ESGTDatabase(esgt_database.DB_ESGT)
+    esgt_db = ESGTDatabase(ESGT_database_interface.DB_ESGT)
 
     # Connect to database
     esgt_db.connect_database()

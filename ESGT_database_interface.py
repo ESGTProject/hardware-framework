@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 '''
-File name: database_interface.py
+File name: ESGT_database_interface.py
 Author: Kairi Kozuma
 Date created: 02/08/2017
 Date last modified: 02/16/2017
