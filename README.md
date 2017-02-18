@@ -1,4 +1,9 @@
 
+2017 Spring Senior Design
+
+Configure the sensors to Rsp3 B.
+
+
 
 #GATECH 2017 Spring Senior Design Project
 
@@ -13,5 +18,4 @@ pip install psycopg2
 ##Trouble shooting on testing sripts for RSBP 3
 ### 1. To Run the script with serial cmd
 add 'sudo' to promote the permission to drive the serial port 
-
 
