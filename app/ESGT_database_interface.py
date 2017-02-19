@@ -23,7 +23,7 @@ conn_template = "host='{}' dbname='{}' user='{}'"
 
 # Database configuration
 # PostgreSQL server hosts
-HOST_LOCALHOST = 'localhost'
+HOST_LOCALHOST = '172.17.0.1'
 # PostgreSQL users
 USER_POSTGRES = 'postgres'
 # Database names

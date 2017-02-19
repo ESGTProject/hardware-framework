@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 '''
-File name: ESGT_setup.py
+File name: create_db.py
 Author: Kairi Kozuma
 Date created: 02/18/2017
 Date last modified: 02/18/2017
