@@ -1,10 +1,10 @@
 ##!/usr/bin/python
 
 '''
-File name: ESGT_restful_server.py
+File name: app.py
 Author: Kairi Kozuma
 Date created: 02/16/2017
-Date last modified: 02/17/2017
+Date last modified: 02/18/2017
 Python Version: 2.7.11
 '''
 
@@ -16,6 +16,7 @@ import ESGT_database_interface
 from ESGT_database_interface import ESGTDatabase
 import json
 import random
+import socket
 
 app = Flask(__name__)
 api = Api(app)
@@ -57,7 +58,9 @@ api.add_resource(ESGTRestfulServer, '/<string:sensor>')
 if __name__ == '__main__':
 
     # Instantiate database
-    esgt_db = ESGTDatabase(ESGT_database_interface.DB_ESGT)
+    host = 'postgres' 
+    user = 'postgres'
+    esgt_db = ESGTDatabase(host, user, ESGT_database_interface.DB_ESGT)
     esgt_db.initialize()
 
     app.run(debug=True, host="0.0.0.0", port=8000)

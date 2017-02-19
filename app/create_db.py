@@ -18,7 +18,9 @@ def main():
     db_name = ESGT_database_interface.DB_ESGT
 
     # Instantiate database
-    esgt_db = ESGTDatabase(db_name)
+    host = 'postgres'
+    user = 'postgres'
+    esgt_db = ESGTDatabase(host, user, db_name)
     esgt_db.initialize()
 
     # Test inserting sensor values

@@ -15,5 +15,5 @@ WORKDIR /code
 RUN pip install -r requirements.txt
 
 # Set default command
-CMD ["python", "ESGT_restful_server.py"]
+CMD ["python", "app.py"]
 

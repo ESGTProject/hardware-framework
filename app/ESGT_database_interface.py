@@ -4,7 +4,7 @@
 File name: ESGT_database_interface.py
 Author: Kairi Kozuma
 Date created: 02/08/2017
-Date last modified: 02/16/2017
+Date last modified: 02/18/2017
 Python Version: 2.7.11
 '''
 
@@ -19,31 +19,23 @@ import time
 # import pgpasslib #TODO need password file if not default user
 
 # Formatting strings
-conn_template = "host='{}' dbname='{}' user='{}'"
+conn_template = "host='{}' user='{}' dbname='{}'"
 
 # Database configuration
-# PostgreSQL server hosts
-HOST_LOCALHOST = '172.17.0.1'
-# PostgreSQL users
-USER_POSTGRES = 'postgres'
-# Database names
-DB_POSTGRES = 'postgres'
+DB_DEFAULT = 'postgres'
 DB_ESGT = 'esgt'
 
-# Connection strings used by psycopg2
-CONN_DEFAULT_CONFIG = conn_template.format(HOST_LOCALHOST, DB_POSTGRES, USER_POSTGRES)
-
-
 class PostgreSQLDatabase(object):
-    def __init__(self, database_name):
+    def __init__(self, host, user, database_name):
         self.db_name = database_name
         self.conn_db = None
+        self.conn_db_config = conn_template.format(host, user, database_name)
+        self.conn_db_config_default = conn_template.format(host, user, DB_DEFAULT)
 
     # Check connection to database
     def connect_database(self):
-        conn_db_config = conn_template.format(HOST_LOCALHOST, self.db_name, USER_POSTGRES)
         try:
-            self.conn_db = psycopg2.connect(conn_db_config)
+            self.conn_db = psycopg2.connect(self.conn_db_config)
         except psycopg2.Error as e:
             print "Unable to connect to the database {}".format(self.db_name)
             print e
@@ -58,7 +50,7 @@ class PostgreSQLDatabase(object):
 
     # Create database if it does not exist
     def create_database(self):
-        with psycopg2.connect(CONN_DEFAULT_CONFIG) as conn:
+        with psycopg2.connect(self.conn_db_config_default) as conn:
             # Enable autocommit to avoid transaction error when creating database
             conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             with conn.cursor() as cur:
@@ -68,7 +60,7 @@ class PostgreSQLDatabase(object):
 
     # Delete database
     def delete_database(self):
-        with psycopg2.connect(CONN_DEFAULT_CONFIG) as conn:
+        with psycopg2.connect(self.conn_db_config_default) as conn:
             conn.autocommit = True
             with conn.cursor() as cur:
                 query = 'DROP DATABASE IF EXISTS {}'.format(self.db_name)

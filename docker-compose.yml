@@ -1,5 +1,5 @@
 app:
-  restart: always
+  restart: "no"
   build: ./app
   expose:
     - "8000"
@@ -16,9 +16,8 @@ data:
   command: "true"
  
 postgres:
-  restart: always
+  restart: "no"
   image: postgres:latest
-  restart: always
   environment:
     - POSTGRESQL_DB=esgt
     - POSTGRESQL_USER=postgres
