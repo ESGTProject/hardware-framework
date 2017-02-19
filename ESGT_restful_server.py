@@ -57,4 +57,4 @@ if __name__ == '__main__':
     esgt_db = ESGTDatabase(ESGT_database_interface.DB_ESGT)
     esgt_db.initialize()
 
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=8000)
