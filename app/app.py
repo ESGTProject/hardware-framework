@@ -12,11 +12,9 @@ Python Version: 2.7.11
 from flask import Flask, request
 from flask_restful import Resource, Api
 
-import ESGT_database_interface
-from ESGT_database_interface import ESGTDatabase
+import ESGT_database.database
+from ESGT_database.database import ESGTDatabase
 import json
-import random
-import socket
 
 app = Flask(__name__)
 api = Api(app)
@@ -58,9 +56,9 @@ api.add_resource(ESGTRestfulServer, '/<string:sensor>')
 if __name__ == '__main__':
 
     # Instantiate database
-    host = 'postgres' 
+    host = 'postgres'
     user = 'postgres'
-    esgt_db = ESGTDatabase(host, user, ESGT_database_interface.DB_ESGT)
+    esgt_db = ESGTDatabase(host, user, ESGT_database.database.DB_ESGT)
     esgt_db.initialize()
 
     app.run(debug=True, host="0.0.0.0", port=8000)

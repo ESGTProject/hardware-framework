@@ -1,29 +1,45 @@
-app:
-  restart: "no"
-  build: ./app
-  expose:
-    - "8000"
-  links:
-    - postgres:postgres
-  ports:
-    - "8000:8000"
+version: "3"
 
-data:
-  restart: "no"
-  image: postgres:latest
-  volumes:
-    - /var/lib/postgresql
-  command: "true"
- 
-postgres:
-  restart: "no"
-  image: postgres:latest
-  environment:
-    - POSTGRESQL_DB=esgt
-    - POSTGRESQL_USER=postgres
-  volumes_from:
-    - data
-  expose:
-    - "5432"
-  ports:
-    - "5432:5432"
+services:
+  app:
+    restart: "no"
+    build:
+      context: ./app
+      dockerfile: Dockerfile-app
+    expose:
+      - "8000"
+    links:
+      - postgres:postgres
+    ports:
+      - "8000:8000"
+
+  updater:
+    restart: "no"
+    build:
+      context: ./app
+      dockerfile: Dockerfile-updater
+    links:
+      - postgres:postgres
+
+  data:
+    restart: "no"
+    image: postgres:latest
+    volumes:
+      - data:/var/lib/postgresql
+    command: "true"
+   
+  postgres:
+    restart: "no"
+    image: postgres:latest
+    environment:
+      - POSTGRESQL_DB=esgt
+      - POSTGRESQL_USER=postgres
+    volumes:
+      - data:/var/lib/postgresql
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+
+volumes:
+  data:

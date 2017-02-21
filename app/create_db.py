@@ -8,14 +8,14 @@ Date last modified: 02/18/2017
 Python Version: 2.7.11
 '''
 
-import ESGT_database_interface
-from ESGT_database_interface import ESGTDatabase
+import ESGT_database.database
+from ESGT_database.database import ESGTDatabase
 import random
 import json
 
 def main():
     # Database name to connect to
-    db_name = ESGT_database_interface.DB_ESGT
+    db_name = ESGT_database.database.DB_ESGT
 
     # Instantiate database
     host = 'postgres'

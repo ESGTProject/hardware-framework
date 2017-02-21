@@ -17,26 +17,26 @@ import json
 from urllib2 import urlopen
 
 
-class ESGT_weather_info:
+class OpenWeatherMap:
     def __init__(self):
     # use Atlanta as default
         self._api_key = 'cca7a9afe7f521c4228b4071ea77e58e'
         self._city_id = '4180439'
-        self._current_weather_api = 'http://api.openweathermap.org/data/2.5/weather?id='    
+        self._current_weather_api = 'http://api.openweathermap.org/data/2.5/weather?id='
         self._forecast_weather_api = 'http://api.openweathermap.org/data/2.5/forecast?id='
     def time_converter(self, time):
         converted_time = datetime.datetime.fromtimestamp(
                          int(time)
                          ).strftime('%I:%M %p')
         return converted_time
-    
+
     def set_city_id(self, new_id):
         self._city_id = new_id
     def set_api_key(self, new_api_key):
         self._api_key = new_api_key
     def url_builder(self, api):
         """
-          current weather url builder, use differt api data 
+          current weather url builder, use differt api data
         """
         unit = 'imperial'  # For Fahrenheit use imperial, for Celsius use metric, and the default is Kelvin.
         # Search for your city ID here: http://bulk.openweathermap.org/sample/city.list.json.gz
@@ -80,7 +80,7 @@ class ESGT_weather_info:
           country=raw_current_api_dict.get('sys').get('country'),
           temp=raw_current_api_dict.get('main').get('temp'),
           temp_max=max(temp_max_list),
-          temp_min=min(temp_min_list), 
+          temp_min=min(temp_min_list),
           rain = rain_stat,
           humidity=raw_current_api_dict.get('main').get('humidity'),
           pressure=raw_current_api_dict.get('main').get('pressure'),
@@ -97,7 +97,7 @@ class ESGT_weather_info:
 
 if __name__ == '__main__':
     try:
-        w = ESGT_weather_info()
+        w = OpenWeatherMap()
         print w.get_json()
     except IOError:
         print('no internet')
