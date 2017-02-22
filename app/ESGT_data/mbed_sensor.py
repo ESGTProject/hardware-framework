@@ -34,6 +34,14 @@ class MbedSensor(object):
         # Functions to read analog data from mbed
         # Get header values (names of sensors)
         self.number_of_sensors = 0
+        self.parse_header(self.mbed_read_header())
+        timeout = time.time() + 5 # 5 seconds from now
+        while True:
+            if len(self.header_list) == 6 or time.time() > timeout:
+                break
+            self.parse_header(self.mbed_read_header())
+        print(self.header_list)
+        time.sleep(.5)
     def mbed_read_header(self):
         self.ser.write(MbedSensor.COMM_GET_HEADER)
         time.sleep(.20)
@@ -71,7 +79,7 @@ class MbedSensor(object):
     '''
       For Jonathan: def more sensor function
     '''
-    def get_json(self, num_data_points):
+    def get_json(self):
         value_list = self.parse_sensor_values(self.mbed_read_sensors())
         print(value_list)
         light_sensor = Sensor('light', 42, 'ESGT', self.light_lamda_func)

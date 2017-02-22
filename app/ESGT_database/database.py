@@ -20,9 +20,11 @@ import time
 
 # Formatting strings
 conn_template = "host='{}' user='{}' dbname='{}'"
+conn_template_pass = "host='{}' user='{}' password='{}' dbname='{}'"
 
 # Database configuration
 DB_DEFAULT = 'postgres'
+PASS_DEFAULT = 'postgres'
 DB_ESGT = 'esgt'
 
 class PostgreSQLDatabase(object):
