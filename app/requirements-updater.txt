@@ -1,0 +1,4 @@
+psycopg2
+RPi.GPIO
+pyserial
+apscheduler

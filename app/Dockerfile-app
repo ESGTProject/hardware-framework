@@ -1,0 +1,24 @@
+FROM python:2.7-alpine
+
+# Install dependencies for psycopg2
+RUN apk update && \
+    apk add --virtual build-deps gcc python-dev musl-dev && \
+        apk add postgresql-dev
+
+# Change directory in image to /code
+WORKDIR /code
+
+# Add requirements file
+ADD ./requirements-app.txt /code/requirements-app.txt
+
+# Install requirements
+RUN pip install -r requirements-app.txt
+
+# Add current directory into /code directory in image
+ADD . /code
+
+# TODO: setup.py here
+# RUN python setup.py install
+
+# Set default command
+CMD ["python", "app.py"]
