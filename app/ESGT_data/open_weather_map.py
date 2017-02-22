@@ -73,7 +73,7 @@ class OpenWeatherMap:
           # 8 data for a day 24 hrs /3 hrs = 8 data
           temp_max_list.append(day_dict.get('main').get('temp_max'))
           temp_min_list.append(day_dict.get('main').get('temp_min'))
-          if(day_dict.get('rain')): rain_stat = day_dict.get('rain')
+          if(day_dict.get('rain')): rain_stat += day_dict.get('rain').get('3h')
           #potential bug
         data = dict(
           city=raw_current_api_dict.get('name'), # same
