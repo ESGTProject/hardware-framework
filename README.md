@@ -31,3 +31,16 @@ Setting up:
    * [Light Sensor] (http://127.0.0.1:8000/light_sensor)
    * [Temperature Sensor] (http://127.0.0.1:8000/temp_sensor)
    * [Proximity Sensor] (http://127.0.0.1:8000/proximity_sensor)
+
+Install postgreSQL 9.6 on Raspberry Pi
+1. Add backports to sources
+ - Add following line to /etc/apt/sources.list.d/sources.list
+  deb http://ftp.debian.org/debian jessie-backports main
+2. Run sudo apt-get update
+3. Install postgresql 9.6
+  sudo apt-get -t jessie-backports install postgresql-9.6
+4. Change following line in /etc/postgresql/9.6/main/pg_hba.conf
+local   all             all                                     trust
+host    all             all             127.0.0.1/32            trust
+host    all             all             ::1/128                 trust
+
