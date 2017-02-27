@@ -12,14 +12,14 @@ Python Version: 2.7.11
 from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
-from flask_sqlalchemy import SQLAlchemy
+import sqlalchemy
 
 import json
 
 app = Flask(__name__)
 api = Api(app)
 CORS(app) # Enable CORS
-esgt_db = 
+esgt_db = None
 
 def date_handler(obj):
     if hasattr(obj, 'isoformat'):
@@ -28,8 +28,8 @@ def date_handler(obj):
         raise TypeError
 
 class ESGTRestfulServer(Resource):
-    def get(self, sensor):
-        rows = esgt_db.select_backlog_data(sensor)
+    def get(self, resource):
+        rows = esgt_db.select(resource)
         if rows is not None:
             if len(rows) > 50: #TODO: Allow dynamic query, temp:Truncate to first 50
                 rows = rows[:50]
@@ -42,18 +42,23 @@ class ESGTRestfulServer(Resource):
         else:
             return
 
-    def put(self, sensor):
+    def put(self, resource):
         return #TODO return something
 
-api.add_resource(ESGTRestfulServer, '/<string:sensor>')
+api.add_resource(ESGTRestfulServer, '/<string:resource>')
 
 if __name__ == '__main__':
 
     # Instantiate database
     host = 'postgres'
     user = 'postgres'
-    esgt_db = ESGTDatabase(host, user, ESGT_database.database.DB_ESGT)
-    esgt_db.initialize()
+    esgt_db = DatabaseHelper(host, user, ESGT_database.database.DB_ESGT)
 
     app.run(debug=True, host="0.0.0.0", port=8000)
     #app.run(debug=True, host="localhost", port=8000)
+
+    db_helper.insert('humidity', {'val':.900})
+    db_helper.insert('humidity', {'val':.901})
+    db_helper.insert('humidity', {'val':.902})
+    db_helper.insert('humidity', {'val':.903})
+    db_helper.insert('temperature', {'val':.903})
