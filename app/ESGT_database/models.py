@@ -18,19 +18,19 @@ class Backlog(Base):
     __tablename__ = 'backlog'
     id = Column(Integer, primary_key=True)
     value = Column(JSON, nullable=False)
-    create_time = Column(DateTime, nullable=False)
+    time_created = Column(DateTime, nullable=False)
     resource_id = Column(Integer, ForeignKey('resources.id'), nullable=False)
     resource = relationship('Resource')
 
     def __repr__(self):
-        return "<BackLog(resource_id='{}', value='{}', create_time='{}')>".format(self.resource_id, self.value, self.create_time)
+        return "<BackLog(resource_id='{}', value='{}', time_created='{}')>".format(self.resource_id, self.value, self.time_created)
 
 class Resource(Base):
     __tablename__ = 'resources'
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
     value = Column(JSON, nullable=False)
-    create_time = Column(DateTime, nullable=False)
+    time_created = Column(DateTime, nullable=False)
 
     def __repr__(self):
-        return "<Resource(name='{}', value='{}', create_time='{}')>".format(self.name, self.value, self.create_time)
+        return "<Resource(name='{}', value='{}', time_created='{}')>".format(self.name, self.value, self.time_created)

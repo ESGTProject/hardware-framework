@@ -27,10 +27,13 @@ class DatabaseHelper(object):
         self.user = user
         self.host = host
         self.database = database
-        self.engine = sqlalchemy.create_engine("postgres://{}@{}/{}".format(user, host, database), echo=True)
+        self.engine = None 
+
+    def connect(self):
+        self.engine = sqlalchemy.create_engine("postgres://{}@{}/{}".format(self.user, self.host, self.database), echo=True)
 
     def create_database(self):
-        self.engine = create_engine(self.user, self.host, DB_DEFAULT)
+        engine = sqlalchemy.create_engine("postgres://{}@{}/{}".format(self.user, self.host, DB_DEFAULT), echo=True)
         conn = engine.connect()
         conn.execute("commit")
         conn.execute("CREATE DATABASE {}".format(self.database))
@@ -45,15 +48,17 @@ class DatabaseHelper(object):
     def insert(self, name, value):
         conn = self.engine.connect()
         now = datetime.now()
-        insert_resource_stmt = insert(Resource.__table__).values(name=name, value=value, create_time=now)
+        insert_resource_stmt = insert(Resource.__table__).values(name=name, value=value, time_created=now)
         update_stmt = insert_resource_stmt.on_conflict_do_update(
             index_elements=['name'],
             set_=dict(value=value)
         )
         result = conn.execute(update_stmt)
-        insert_backlog_stmt = insert(Backlog.__table__).values(resource_id=result.inserted_primary_key[0], value=value, create_time=now)
+        insert_backlog_stmt = insert(Backlog.__table__).values(resource_id=result.inserted_primary_key[0], value=value, time_created=now)
         conn.execute(insert_backlog_stmt)
         conn.close()
 
     def select(self, name):
-        return session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(Backlog.create_time)
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+        return session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(Backlog.time_created).all()
