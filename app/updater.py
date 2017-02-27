@@ -37,8 +37,8 @@ def main():
 
     # Initialize job list
     job_list = [
-        {'name': 'weather', 'func': owm.get_json, 'sec': 60},
-        {'name': 'light_sensor', 'func': mbed.get_json, 'sec': 1}
+        {'name': 'weather', 'func': owm.get_json, 'sec': 120},
+        {'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}
     ]
 
     # Scheduler for updating values

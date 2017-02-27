@@ -23,6 +23,7 @@ class MbedSensor(object):
     COMM_GET_VALUE = '1' # tell mbed to send sensor values
     COMM_INVALID_HEADER = 'DISCONNECTED'
     def __init__(self):
+        self.ser = None
         try:# Serial connection to mbed (virtual COM through USB)
             self.ser = serial.Serial('/dev/ttyACM0', 9600, timeout=0.2)
             if(self.ser.isOpen()): self.ser.close()
