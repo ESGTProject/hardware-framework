@@ -1,4 +1,4 @@
-##!/usr/bin/python
+#!/usr/bin/python
 
 '''
 File name: app.py
@@ -12,29 +12,20 @@ Python Version: 2.7.11
 from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
+from flask_sqlalchemy import SQLAlchemy
 
-import ESGT_database.database
-from ESGT_database.database import ESGTDatabase
 import json
 
 app = Flask(__name__)
 api = Api(app)
-CORS(app)
-'''
-# Attempt to change default json encoder to handle datetime
-@api.representation('application/json')
-def output_json(data, code, headers=None):
-    #resp = api.make_response(json.dumps(data), code)
-    resp = api.make_response(json.dumps(data, cls=DatetimeEncoder), code)
-    resp.headers.extend(headers or {})
-    return resp
-'''
+CORS(app) # Enable CORS
+esgt_db = 
+
 def date_handler(obj):
     if hasattr(obj, 'isoformat'):
         return obj.isoformat()
     else:
         raise TypeError
-
 
 class ESGTRestfulServer(Resource):
     def get(self, sensor):

@@ -21,4 +21,4 @@ ADD . /code
 # RUN python setup.py install
 
 # Set default command
-CMD ["python", "app.py"]
+CMD ["python", "models.py"]
