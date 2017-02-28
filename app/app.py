@@ -30,21 +30,31 @@ def date_handler(obj):
     else:
         raise TypeError
 
-class ESGTRestfulServer(Resource):
+def flatten(row):
+    dct = json.loads(row.value)
+    dct["timestamp"] = row.time_created
+    return dct
+
+class Resource(Resource):
     def get(self, resource):
         rows = db_helper.select(resource)
-        elem_array = [None] * len(rows)
         if rows is not None:
-            for i, e in enumerate(rows): # Flatten timestamp and JSON #TODO In SQL?
-                obj = json.loads(e.value)
-                obj["timestamp"] = e.time_created
-                elem_array[i] = obj
+            elem_array = list(map(flatten, rows))
             return json.loads(json.dumps(elem_array, default=date_handler))
 
     def put(self, resource):
         return #TODO return something
 
-api.add_resource(ESGTRestfulServer, '/<string:resource>')
+class ResourceList(Resource):
+    def get(self):
+        rows = db_helper.select_resources()
+        return rows
+
+    def put(self):
+        return #TODO: return something
+
+api.add_resource(Resource, '/resource/<string:resource>')
+api.add_resource(ResourceList, '/resource')
 
 if __name__ == '__main__':
 

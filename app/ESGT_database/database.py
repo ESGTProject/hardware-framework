@@ -27,7 +27,7 @@ class DatabaseHelper(object):
         self.user = user
         self.host = host
         self.database = database
-        self.engine = None 
+        self.engine = None
 
     def connect(self):
         self.engine = sqlalchemy.create_engine("postgres://{}@{}/{}".format(self.user, self.host, self.database), echo=True)
@@ -44,7 +44,7 @@ class DatabaseHelper(object):
 
     def drop_tables(self):
         Base.metadata.drop_all(self.engine, checkfirst=True)
-        
+
     def insert(self, name, value):
         conn = self.engine.connect()
         now = datetime.now()
@@ -58,7 +58,12 @@ class DatabaseHelper(object):
         conn.execute(insert_backlog_stmt)
         conn.close()
 
-    def select(self, name):
+    def select(self, name, limit=50):
         Session = sessionmaker(bind=self.engine)
         session = Session()
-        return session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(Backlog.time_created).all()
+        return session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(Backlog.time_created).limit(limit).all()
+
+    def select_resources(self):
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+        return session.query(Resource.name).order_by(Resource.name).all()
