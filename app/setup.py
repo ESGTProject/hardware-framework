@@ -10,6 +10,7 @@ Python Version: 2.7.11
 from ESGT_database import database as ESGT_DB
 from ESGT_database.database import DatabaseHelper
 import sqlalchemy
+import sys
 
 def main():
     # Create database and tables
@@ -19,7 +20,9 @@ def main():
     except sqlalchemy.exc.ProgrammingError:
         print ("Database already exists")
     db_helper.connect()
-    db_helper.drop_tables() #TODO: Offer cleaning function
+    # Option to clean tables with setup.py clean
+    if (len(sys.argv) != 0 and sys.argv[1] == 'clean'):
+        db_helper.drop_tables()
     db_helper.create_tables()
 
 if __name__ == "__main__":
