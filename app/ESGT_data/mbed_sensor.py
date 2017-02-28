@@ -83,7 +83,7 @@ class MbedSensor(object):
     def get_json(self):
         value_list = self.parse_sensor_values(self.mbed_read_sensors())
         print(value_list)
-        light_sensor = Sensor('light', 42, 'ESGT', self.light_lamda_func)
+        light_sensor = Sensor('light', '42', 'ESGT', self.light_lamda_func)
         light_sensor.set_value(value_list[0])
         return light_sensor.to_json_string()
 
