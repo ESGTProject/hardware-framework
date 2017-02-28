@@ -34,16 +34,13 @@ class ESGTRestfulServer(Resource):
     def get(self, resource):
         rows = db_helper.select(resource)
         if rows is not None:
-            if len(rows) > 50: #TODO: Allow dynamic query, temp:Truncate to first 50
-                rows = rows[:50]
-            elem_array = [None] * len(rows)
-            for i, row in enumerate(rows): # Flatten timestamp and JSON
-                obj = row.value
-                obj["timestamp"] = row.time_created
-                elem_array[i] = obj
-            return json.loads(json.dumps(elem_array, default=date_handler))
-        else:
-            return
+            return json.loads(json.dumps(r.__dict__ for r in rows))
+            #elem_array = [None] * len(rows)
+            # for i, row in enumerate(rows): # Flatten timestamp and JSON
+            #     obj = row.value
+            #     obj["timestamp"] = row.time_created
+            #     elem_array[i] = obj
+            #return json.loads(json.dumps(rows, default=date_handler))
 
     def put(self, resource):
         return #TODO return something
@@ -57,12 +54,6 @@ if __name__ == '__main__':
     user = 'postgres'
     db_helper = DatabaseHelper(host, user, ESGT_database.database.DB_ESGT)
     db_helper.connect()
-
-    db_helper.insert('humidity', {'val':.900})
-    db_helper.insert('humidity', {'val':.901})
-    db_helper.insert('humidity', {'val':.902})
-    db_helper.insert('humidity', {'val':.903})
-    db_helper.insert('temperature', {'val':.903})
 
     app.run(debug=True, host="0.0.0.0", port=8000)
     #app.run(debug=True, host="localhost", port=8000)
