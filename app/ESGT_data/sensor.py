@@ -1,7 +1,7 @@
 ##!/usr/bin/python
 '''
 File name: sensor.py
-Author: Kairi Kozumai, Boa-Lin Lai
+Author: Kairi Kozuma, Boa-Lin Lai
 Date created: 02/17/2017
 Date last modified: 02/28/2017
 Python Version: 2.7.11
@@ -24,7 +24,7 @@ class Sensor(object):
             name=self.name,
             serialnumber=self.serialnumber,
             units=self.units,
-            value=self.value_in_units
+            value=value_in_units
         )
         return json.dumps(data)
 
