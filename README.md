@@ -9,12 +9,21 @@
 3. Run `docker-compose build` to build the docker container images.
 
 3. Run `docker-compose run app /usr/local/bin/python setup.py --rm` to build the initial database.
-
+    * To start with a fresh database, run the following:
+        * `docker-compose run app /usr/local/bin/python setup.py clean --rm`
 4. Run `docker-compose up -d` to launch containers as background daemons.
 
 5. Access RESTful api on localhost, port 8000.
-   Sample database endpoints:
-   * [Light Sensor] (http://127.0.0.1:8000/light_sensor)
+    Get list of resource endpoints:
+    * `http://127.0.0.1:8000/resource`
+    * [Resources] (http://127.0.0.1:8000/resource)
+
+    Then access the resource:
+    * `http://127.0.0.1:8000/resource/<resource_name>`
+
+    Example:
+    * `http://127.0.0.1:8000/resouce/weather`
+
 
 ##Trouble shooting macOS
 ### 1. To install psycopg2, install postgresql first
