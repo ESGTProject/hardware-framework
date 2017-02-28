@@ -24,6 +24,9 @@
     Example:
     * `http://127.0.0.1:8000/resouce/weather`
 
+    Supported parameters:
+    * `?limit=<num>` Limits the number of results returned
+
 
 ##Trouble shooting macOS
 ### 1. To install psycopg2, install postgresql first

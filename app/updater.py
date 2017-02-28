@@ -45,7 +45,7 @@ def main():
     # Initialize job list
     job_list = [
         #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}, #TODO: Handler with fake updater if not on Raspberry Pi
-        Job('weather', owm.get_json, 30),
+        Job('weather', owm.get_json, 300),
     ]
 
     # Create fake data for testing
@@ -55,9 +55,9 @@ def main():
         temperature_sensor = FakeSensor('temperature', 'TMPSNSR451', 'degreesC', lambda x: x * 32)
         humidity_sensor = FakeSensor('humidity', 'HMD9999', 'percent', lambda x: x * 100)
 
-        job_list.append(Job('light', light_sensor.to_json_string, 5))
-        job_list.append(Job('temperature', temperature_sensor.to_json_string, 5))
-        job_list.append(Job('humidity', humidity_sensor.to_json_string, 5))
+        job_list.append(Job('light', light_sensor.to_json_string, 30))
+        job_list.append(Job('temperature', temperature_sensor.to_json_string, 30))
+        job_list.append(Job('humidity', humidity_sensor.to_json_string, 30))
 
     # Scheduler for updating values
     #scheduler = BlockingScheduler(timezone=get_localzone()) # TODO: Cannot get time inside Docker

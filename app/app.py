@@ -13,7 +13,6 @@ from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
 import sqlalchemy
-
 import json
 
 import ESGT_database
@@ -37,7 +36,9 @@ def flatten(row):
 
 class Resource(Resource):
     def get(self, resource):
-        rows = db_helper.select(resource)
+        limit_str = request.args.get('limit')
+        limit = int(limit_str) if limit_str != None else 10 #TODO: Handle error
+        rows = db_helper.select(resource, limit)
         if rows is not None:
             elem_array = list(map(flatten, rows))
             return json.loads(json.dumps(elem_array, default=date_handler))
