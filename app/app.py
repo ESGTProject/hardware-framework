@@ -33,14 +33,13 @@ def date_handler(obj):
 class ESGTRestfulServer(Resource):
     def get(self, resource):
         rows = db_helper.select(resource)
+        elem_array = [None] * len(rows)
         if rows is not None:
-            return json.loads(json.dumps(r.__dict__ for r in rows))
-            #elem_array = [None] * len(rows)
-            # for i, row in enumerate(rows): # Flatten timestamp and JSON
-            #     obj = row.value
-            #     obj["timestamp"] = row.time_created
-            #     elem_array[i] = obj
-            #return json.loads(json.dumps(rows, default=date_handler))
+            for i, e in enumerate(rows): # Flatten timestamp and JSON #TODO In SQL?
+                obj = json.loads(e.value)
+                obj["timestamp"] = e.time_created
+                elem_array[i] = obj
+            return json.loads(json.dumps(elem_array, default=date_handler))
 
     def put(self, resource):
         return #TODO return something

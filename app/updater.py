@@ -25,18 +25,18 @@ def update_db_worker(db_helper, name, func_get_json):
 
 def main():
     # Database name to connect to
- 
+
     # Instantiate database
     host = 'postgres'
     user = 'postgres'
     db_helper = DatabaseHelper(host, user, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
-    db_helper.insert('humidity', {'val':.900})
-    db_helper.insert('humidity', {'val':.901})
-    db_helper.insert('humidity', {'val':.902})
-    db_helper.insert('humidity', {'val':.903})
-    db_helper.insert('temperature', {'val':.903})
+    # db_helper.insert('humidity', {'val':.900})
+    # db_helper.insert('humidity', {'val':.901})
+    # db_helper.insert('humidity', {'val':.902})
+    # db_helper.insert('humidity', {'val':.903})
+    # db_helper.insert('temperature', {'val':.903})
 
     # Initialize objects TODO: Use static?
     owm = OpenWeatherMap()
@@ -44,8 +44,8 @@ def main():
 
     # Initialize job list
     job_list = [
-        #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5},
-        {'name': 'weather', 'func': owm.get_json, 'sec': 5}
+        #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}, #TODO: Handler with fake updater if not on Raspberry Pi
+        {'name': 'weather', 'func': owm.get_json, 'sec': 10}
     ]
 
     # Scheduler for updating values
