@@ -4,7 +4,7 @@
 File name: app.py
 Author: Kairi Kozuma
 Date created: 02/16/2017
-Date last modified: 02/18/2017
+Date last modified: 03/01/2017
 Python Version: 2.7.11
 '''
 
@@ -13,6 +13,7 @@ from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
 import sqlalchemy
 import json
+import pytz
 
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
@@ -30,7 +31,7 @@ def date_handler(obj):
 
 def flatten(row):
     dct = json.loads(row.value)
-    dct["timestamp"] = row.time_created
+    dct["timestamp"] = pytz.utc.localize(row.time_created, is_dst=None).astimezone(pytz.utc)
     return dct
 
 class Resource(Resource):

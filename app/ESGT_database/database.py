@@ -14,7 +14,6 @@ from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import desc
 from datetime import datetime
-
 from .models import Base, Resource, Backlog
 
 # Database configuration
@@ -48,7 +47,7 @@ class DatabaseHelper(object):
 
     def insert(self, name, value):
         conn = self.engine.connect()
-        now = datetime.now()
+        now = datetime.utcnow()
         insert_resource_stmt = insert(Resource.__table__).values(name=name, value=value, time_created=now)
         update_stmt = insert_resource_stmt.on_conflict_do_update(
             index_elements=['name'],
