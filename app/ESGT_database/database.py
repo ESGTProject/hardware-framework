@@ -12,6 +12,7 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import desc
 from datetime import datetime
 
 from .models import Base, Resource, Backlog
@@ -61,7 +62,7 @@ class DatabaseHelper(object):
     def select(self, name, limit=50):
         Session = sessionmaker(bind=self.engine)
         session = Session()
-        return session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(Backlog.time_created).limit(limit).all()
+        return session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(desc(Backlog.time_created)).limit(limit).all()
 
     def select_resources(self):
         Session = sessionmaker(bind=self.engine)

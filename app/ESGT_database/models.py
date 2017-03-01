@@ -30,7 +30,7 @@ class Resource(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
     value = Column(JSON, nullable=False)
-    time_created = Column(DateTime, nullable=False)
+    time_created = Column(DateTime(timezone=True), nullable=False)
 
     def __repr__(self):
         return "<Resource(name='{}', value='{}', time_created='{}')>".format(self.name, self.value, self.time_created)

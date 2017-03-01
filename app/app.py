@@ -8,7 +8,6 @@ Date last modified: 02/18/2017
 Python Version: 2.7.11
 '''
 
-# Python restful api
 from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
