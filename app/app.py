@@ -50,7 +50,8 @@ class Resource(Resource):
     def get(self, resource):
         # If it is a nondatabase resource, attempt query
         if resource in nondb_resource_dict.keys():
-            return nondb_resource_dict[resource].get({'source':'google-news','sortBy':'top'}) #TODO: Allow user to specify params, handle non news
+            args = request.args
+            return nondb_resource_dict[resource].get(args)
 
         else: # Use database to build response
             limit_str = request.args.get('limit')
@@ -77,14 +78,15 @@ class ResourceList(Resource):
 
 class NoDatabaseResource(object):
     def __init__(self, name, endpoint, api_key_query, api_key):
-            self.name = name
-            self.endpoint = endpoint
-            self.api_key_query = api_key_query
-            self.api_key = api_key
+        self.name = name
+        self.endpoint = endpoint
+        self.api_key_query = api_key_query
+        self.api_key = api_key
 
 
 class NewsAPIResource(NoDatabaseResource):
     def get(self, params = {}):
+        params = params.to_dict()
         params[self.api_key_query] = self.api_key # add api key to params
         try:
             r = requests.get(self.endpoint, params)
