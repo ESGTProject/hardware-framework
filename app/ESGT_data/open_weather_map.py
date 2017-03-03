@@ -18,9 +18,9 @@ from urllib2 import urlopen
 
 
 class OpenWeatherMap:
-    def __init__(self):
+    def __init__(self, api_key):
     # use Atlanta as default
-        self._api_key = 'cca7a9afe7f521c4228b4071ea77e58e'
+        self._api_key = api_key
         self._city_id = '4180439'
         self._current_weather_api = 'http://api.openweathermap.org/data/2.5/weather?id='
         self._forecast_weather_api = 'http://api.openweathermap.org/data/2.5/forecast?id='

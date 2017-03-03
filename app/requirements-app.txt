@@ -4,3 +4,4 @@ flask-restful
 flask-cors
 pytz
 sqlalchemy
+requests

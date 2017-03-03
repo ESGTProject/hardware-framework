@@ -16,6 +16,8 @@ from ESGT_data.fake_sensor import FakeSensor
 from ESGT_data.open_weather_map import OpenWeatherMap
 import sqlalchemy
 
+import api_key # api_key.py contains api keys for OWM and News
+
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
 
@@ -38,8 +40,8 @@ def main():
     db_helper = DatabaseHelper(host, user, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
-    # Initialize objects TODO: Use static?
-    owm = OpenWeatherMap()
+    # Initialize objects
+    owm = OpenWeatherMap(api_key.OWM_API_KEY)
     #mbed = MbedSensor()
 
     # Initialize job list

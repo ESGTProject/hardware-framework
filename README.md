@@ -26,6 +26,9 @@
 
     Supported parameters:
     * `?limit=<num>` Limits the number of results returned
+    * `?source=<news source>` For `/resource/news` endpoint only, (REQUIRED)
+        - [List of sources] (https://newsapi.org/sources)
+        - example: `http://127.0.0.1:8000/resource/news?source=google-news`
 
 
 ##Trouble shooting macOS
