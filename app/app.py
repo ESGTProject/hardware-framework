@@ -14,6 +14,7 @@ from flask_cors import CORS, cross_origin
 import sqlalchemy
 import json
 import pytz
+import requests
 
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
@@ -49,7 +50,7 @@ class Resource(Resource):
     def get(self, resource):
         # If it is a nondatabase resource, attempt query
         if resource in nondb_resource_dict.keys():
-            return get({'source':'google-news','sortBy':'top'}) #TODO: Allow user to specify params, handle non news
+            return nondb_resource_dict[resource].get({'source':'google-news','sortBy':'top'}) #TODO: Allow user to specify params, handle non news
 
         else: # Use database to build response
             limit_str = request.args.get('limit')
@@ -66,7 +67,7 @@ class ResourceList(Resource):
     def get(self):
         # List of resources from database
         list_of_lists = db_helper.select_resources()
-        resource_list = [v for sublist in list_of_lists for v in sublist]
+        resource_list = [v for sublist in list_of_lists for v in sublist] # Flatten list of lists
         # Add list of resources from non database resources
         resource_list.extend(nondb_resource_dict.keys())
         return resource_list
@@ -74,19 +75,22 @@ class ResourceList(Resource):
     def put(self):
         return
 
-class ResourceNoDatabase(object):
+class NoDatabaseResource(object):
     def __init__(self, name, endpoint, api_key_query, api_key):
-        self.name = name
-        self.endpoint = endpoint
-        self.api_key_query = api_key_query
-        self.api_key = api_key
+            self.name = name
+            self.endpoint = endpoint
+            self.api_key_query = api_key_query
+            self.api_key = api_key
 
+
+class NewsAPIResource(NoDatabaseResource):
     def get(self, params = {}):
-        params[api_key_query] = api_key # add api key to params
+        params[self.api_key_query] = self.api_key # add api key to params
         try:
-            return requests.get(endpoint, params=params).json()
+            r = requests.get(self.endpoint, params)
+            return r.json()['articles']
         except:
-            print ("Error retrieving data for {} at {}".format(name, endpoint))
+            print ("Error retrieving data for {} at {}".format(self.name, self.endpoint))
             return None
 
 # Add api endpoints
@@ -102,7 +106,7 @@ if __name__ == '__main__':
     db_helper.connect()
 
     # Resources without database backend (route APIs)
-    news_api = ResourceNoDatabase('news', 'htts://newsapi.org/v1/articles', 'apiKey', api_key.NEWS_API_KEY)
+    news_api = NewsAPIResource('news', 'https://newsapi.org/v1/articles', 'apiKey', api_key.NEWS_API_KEY)
     nondb_resource_dict['news'] = news_api
 
     # Run micro server
