@@ -19,8 +19,6 @@ import requests
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
 
-import api_key # api_key.py contains api keys for OWM and News
-
 # Set up flask app variables
 app = Flask(__name__)
 api = Api(app)
@@ -55,7 +53,7 @@ class Resource(Resource):
 
         else: # Use database to build response
             limit_str = request.args.get('limit')
-            limit = int(limit_str) if limit_str != None else DEFAULT_RESOURCE_LENGTH
+            limit = int(limit_str) if limit_str is not None else DEFAULT_RESOURCE_LENGTH
             rows = db_helper.select(resource, limit)
             if rows is not None:
                 elem_array = list(map(flatten, rows))
@@ -84,7 +82,7 @@ class NoDatabaseResource(object):
         self.api_key = api_key
 
 
-class NewsAPIResource(NoDatabaseResource):
+class NewsAPIResource(NoDatabaseResource): #TODO: Move to own file in module
     def get(self, params = {}):
         params = params.to_dict()
         params[self.api_key_query] = self.api_key # add api key to params
