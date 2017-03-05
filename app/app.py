@@ -19,6 +19,8 @@ import requests
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
 
+from ESGT_data import gmail #TODO: Cache in database?
+
 # Set up flask app variables
 app = Flask(__name__)
 api = Api(app)
@@ -49,7 +51,7 @@ class Resource(Resource):
         # If it is a nondatabase resource, attempt query
         if resource in nondb_resource_dict.keys():
             args = request.args
-            return nondb_resource_dict[resource].get(args)
+            return json.loads(json.dumps(nondb_resource_dict[resource].get(args), default=date_handler))
 
         else: # Use database to build response
             limit_str = request.args.get('limit')
@@ -74,15 +76,17 @@ class ResourceList(Resource):
     def put(self):
         return
 
-class NoDatabaseResource(object):
+class SimpleRestfulResource(object):
     def __init__(self, name, endpoint, api_key_query, api_key):
         self.name = name
         self.endpoint = endpoint
         self.api_key_query = api_key_query
         self.api_key = api_key
+    def get(self, params = {}):
+        raise NotImplementedError("subclasses must override get()")
 
 
-class NewsAPIResource(NoDatabaseResource): #TODO: Move to own file in module
+class NewsAPIResource(SimpleRestfulResource): #TODO: Move to own file in module
     def get(self, params = {}):
         params = params.to_dict()
         params[self.api_key_query] = self.api_key # add api key to params
@@ -92,6 +96,14 @@ class NewsAPIResource(NoDatabaseResource): #TODO: Move to own file in module
         except:
             print ("Error retrieving data for {} at {}".format(self.name, self.endpoint))
             return None
+
+
+class GmailAPIResource(object): #TODO: Move to own file in module
+    def __init__(self, secret_file, credential_path):
+        self.gmail_client = gmail.Gmail(secret_file, credential_path)
+    def get(self, params = {}): #TODO: use params
+        return self.gmail_client.get_json()
+
 
 # Add api endpoints
 api.add_resource(Resource, '/resource/<string:resource>')
@@ -114,7 +126,9 @@ if __name__ == '__main__':
 
     # Resources without database backend (route APIs)
     news_api = NewsAPIResource('news', 'https://newsapi.org/v1/articles', 'apiKey', api_keys["NEWS_API_KEY"])
+    gmail_api = GmailAPIResource('gmail_client_secret.json','./.credentials/gmail-session.json')
     nondb_resource_dict['news'] = news_api
+    nondb_resource_dict['gmail'] = gmail_api
 
     # Run micro server
     app.run(debug=True, host="0.0.0.0", port=8000)
