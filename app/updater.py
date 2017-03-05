@@ -21,7 +21,6 @@ import ESGT_database
 from ESGT_database.database import DatabaseHelper
 
 from apscheduler.schedulers.blocking import BlockingScheduler
-from tzlocal import get_localzone
 
 class Job(object):
     def __init__(self, name, json_func, sec_interval):
