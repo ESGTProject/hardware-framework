@@ -12,13 +12,6 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
-
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
-
 # If modifying these scopes, delete your previously saved credentials
 # at /.credentials/
 SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
@@ -47,10 +40,7 @@ class Gmail(object):
         if not credentials or credentials.invalid:
             flow = client.flow_from_clientsecrets(self.secret_file, SCOPES)
             flow.user_agent = APPLICATION_NAME
-            if flags:
-                credentials = tools.run_flow(flow, store, flags)
-            else:  # Needed only for compatibility with Python 2.6
-                credentials = tools.run(flow, store)
+            credentials = tools.run_flow(flow, store, tools.argparser.parse_args([]))
             print('Storing credentials to ' + self.credential_path)
         return credentials
 
