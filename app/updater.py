@@ -72,7 +72,7 @@ def main():
     # Start jobs
     for job in job_list:
         scheduler.add_job(update_db_worker, 'interval', [db_helper, job], seconds=job.sec_interval)
-        print('Launched job:{}',job.name)
+        print('Launched job:{}'.format(job.name))
 
     scheduler.start() # Blocking call
 
