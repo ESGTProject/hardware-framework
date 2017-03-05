@@ -2,4 +2,4 @@
 *.pyc
 gmail_client_secret.json
 api_keys.json
-/.credentials
+app/.credentials
