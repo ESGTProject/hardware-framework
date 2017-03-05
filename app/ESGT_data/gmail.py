@@ -17,7 +17,7 @@ except ImportError:
     flags = None
 
 # If modifying these scopes, delete your previously saved credentials
-# at [PROJECT FOLDER]/.credentials/gmail-python-quickstart.json
+# at [PROJECT FOLDER]/.credentials/
 SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
 CLIENT_SECRET_FILE = 'gmail_client_secret.json'
 APPLICATION_NAME = 'ESGT Backend'

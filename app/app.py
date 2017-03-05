@@ -105,8 +105,15 @@ if __name__ == '__main__':
     db_helper = DatabaseHelper(host, user, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
+    # Load API keys
+    api_keys = None
+    with open('api_keys.json') as json_file:
+        api_keys = json.load(json_file)
+    if api_keys is None:
+        raise IOError("API key file 'api_keys.json' not found")
+
     # Resources without database backend (route APIs)
-    news_api = NewsAPIResource('news', 'https://newsapi.org/v1/articles', 'apiKey', api_key.NEWS_API_KEY)
+    news_api = NewsAPIResource('news', 'https://newsapi.org/v1/articles', 'apiKey', api_keys["NEWS_API_KEY"])
     nondb_resource_dict['news'] = news_api
 
     # Run micro server
