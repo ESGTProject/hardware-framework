@@ -53,7 +53,7 @@ def main():
     # Initialize job list
     job_list = [
         #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}, #TODO: Dynamically handle if not on Raspberry Pi
-        Job('weather', owm.get_json, 10),
+        Job('weather', owm.get_json, 60 * 5),
     ]
 
     # Create fake data for testing #TODO: Handle dynamically
@@ -63,7 +63,7 @@ def main():
         temperature_sensor = FakeSensor('temperature', 'TMPSNSR451', 'degreesC', lambda x: x * 32)
         humidity_sensor = FakeSensor('humidity', 'HMD9999', 'percent', lambda x: x * 100)
 
-        job_list.append(Job('light', light_sensor.to_json_string, 10))
+        job_list.append(Job('light', light_sensor.to_json_string, 60))
         job_list.append(Job('temperature', temperature_sensor.to_json_string, 60))
         job_list.append(Job('humidity', humidity_sensor.to_json_string, 60))
 
