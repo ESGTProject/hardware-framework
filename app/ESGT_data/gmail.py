@@ -40,7 +40,9 @@ class Gmail(object):
         if not credentials or credentials.invalid:
             flow = client.flow_from_clientsecrets(self.secret_file, SCOPES)
             flow.user_agent = APPLICATION_NAME
-            credentials = tools.run_flow(flow, store, tools.argparser.parse_args([]))
+            flags = tools.argparser.parse_args([])
+            flags.noauth_local_webserver=False
+            credentials = tools.run_flow(flow, store, flags)
             print('Storing credentials to ' + self.credential_path)
         return credentials
 
