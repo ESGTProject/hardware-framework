@@ -8,11 +8,13 @@ Date last modified: 03/01/2017
 Python Version: 2.7.11
 '''
 
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
+from flask.json import JSONEncoder
 from flask_cors import CORS, cross_origin
 import sqlalchemy
 import json
 import pytz
+from datetime import datetime
 import requests
 
 import ESGT_database
@@ -20,8 +22,22 @@ from ESGT_database.database import DatabaseHelper
 
 from ESGT_data import gmail #TODO: Cache in database?
 
+
+class ISODatetimeEncoder(JSONEncoder):
+    """Custom ISO format for json encoding of datetime objects"""
+    def default(self, obj):
+        try:
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, obj)
+
 # Set up flask app variables
 app = Flask(__name__)
+app.json_encoder = ISODatetimeEncoder
 CORS(app) # Enable CORS
 
 # Default number of items to return
@@ -32,20 +48,6 @@ db_helper = None
 
 # Non database helper for other (non database backed up) resources
 nondb_resource_dict = {}
-
-def date_handler(obj):
-    """Handles serialization of datetime objects
-
-    Default json serialization for Flask does not implement datetime
-    serialization, so this handler is passed to the argument for json.dumps()
-
-    Returns:
-        object serialized to isoformat (datetime object serialization)
-    """
-    if hasattr(obj, 'isoformat'):
-        return obj.isoformat()
-    else:
-        raise TypeError
 
 def flatten(row):
     """Adds timestamp to same row as json object stored in row.value
@@ -92,8 +94,7 @@ def get_resource(resource):
     # If it is a nondatabase resource, attempt query
     if resource in nondb_resource_dict.keys():
         args = request.args
-        # return json.loads(json.dumps(nondb_resource_dict[resource].get(args), default=date_handler))
-        return jsonify(nondb_resource_dict[resource].get(args))
+        return jsonify(nondb_resource_dict[resource].get(args)) #TODO: Limit amount returned
     # Use database to build response
     else:
         limit_str = request.args.get('limit')
