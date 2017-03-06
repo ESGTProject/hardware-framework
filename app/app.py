@@ -121,7 +121,7 @@ def googlecallback():
         scope=SCOPES,
         redirect_uri=flask.url_for('googlecallback', _external=True))
     flow.params['access_type'] = 'offline'
-    flow.params['include_granted_scopes'] = True
+    flow.params['include_granted_scopes'] = 'true'
     if 'code' not in flask.request.args:
         auth_uri = flow.step1_get_authorize_url()
         return flask.redirect(auth_uri)
