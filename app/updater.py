@@ -15,14 +15,12 @@ from ESGT_data.sensor import Sensor
 from ESGT_data.fake_sensor import FakeSensor
 from ESGT_data.open_weather_map import OpenWeatherMap
 import sqlalchemy
-
-import api_key # api_key.py contains api keys for OWM and News
+import json
 
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
 
 from apscheduler.schedulers.blocking import BlockingScheduler
-from tzlocal import get_localzone
 
 class Job(object):
     def __init__(self, name, json_func, sec_interval):
@@ -31,26 +29,39 @@ class Job(object):
         self.sec_interval = sec_interval
 
 def update_db_worker(db_helper, job):
+    """Function to insert json into database
+
+    Arguments:
+        db_helper : DatabaseHelper instance to connect to database
+        job : Job object with name, json retrieval function, and time interval
+    """
     db_helper.insert(job.name, job.json_func())
 
 def main():
-    # Instantiate database
+    # Instantiate database helper
     host = 'postgres'
     user = 'postgres'
     db_helper = DatabaseHelper(host, user, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
+    # Load API keys
+    api_keys = None
+    with open('api_keys.json') as json_file:
+        api_keys = json.load(json_file)
+    if api_keys is None:
+        raise IOError("API key file 'api_keys.json' not found")
+
     # Initialize objects
-    owm = OpenWeatherMap(api_key.OWM_API_KEY)
+    owm = OpenWeatherMap(api_keys["OWM_API_KEY"])
     #mbed = MbedSensor()
 
     # Initialize job list
     job_list = [
-        #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}, #TODO: Handler with fake updater if not on Raspberry Pi
-        Job('weather', owm.get_json, 300),
+        #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}, #TODO: Dynamically handle if not on Raspberry Pi
+        Job('weather', owm.get_json, 60 * 5),
     ]
 
-    # Create fake data for testing
+    # Create fake data for testing #TODO: Handle dynamically
     fake_data = True
     if fake_data:
         light_sensor = FakeSensor('light', 'HAL9000', 'lux', lambda x: x * 10000)
@@ -62,13 +73,12 @@ def main():
         job_list.append(Job('humidity', humidity_sensor.to_json_string, 60))
 
     # Scheduler for updating values
-    #scheduler = BlockingScheduler(timezone=get_localzone()) # TODO: Cannot get time inside Docker
     scheduler = BlockingScheduler(timezone='EST')
 
     # Start jobs
     for job in job_list:
         scheduler.add_job(update_db_worker, 'interval', [db_helper, job], seconds=job.sec_interval)
-        print('Launched job:{}',job.name)
+        print('Launched job:{}'.format(job.name))
 
     scheduler.start() # Blocking call
 
