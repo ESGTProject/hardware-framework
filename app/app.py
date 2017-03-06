@@ -93,7 +93,7 @@ class GmailAPIResource(object): #TODO: Move to own file in module
     def get(self, params = {}): #TODO: use params, use session
         store = Storage(CREDENTIAL_PATH)
         credentials = store.get()
-        return self.gmail_client.get_json(client.OAuth2Credentials.from_json(credentials))
+        return self.gmail_client.get_json(credentials)
 
 @app.route('/googlelogin')
 def googlelogin():
