@@ -29,6 +29,12 @@ class Job(object):
         self.sec_interval = sec_interval
 
 def update_db_worker(db_helper, job):
+    """Function to insert json into database
+
+    Arguments:
+        db_helper : DatabaseHelper instance to connect to database
+        job : Job object with name, json retrieval function, and time interval
+    """
     db_helper.insert(job.name, job.json_func())
 
 def main():
