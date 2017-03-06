@@ -88,23 +88,23 @@ class GmailAPIResource(object): #TODO: Move to own file in module
 
 # Add api endpoints
 @app.route('/resource/<string:resource>', methods=['GET'])
-def get(self, resource):
+def get_resource(resource):
     # If it is a nondatabase resource, attempt query
     if resource in nondb_resource_dict.keys():
         args = request.args
         # return json.loads(json.dumps(nondb_resource_dict[resource].get(args), default=date_handler))
         return jsonify(nondb_resource_dict[resource].get(args))
-
-    else: # Use database to build response
+    # Use database to build response
+    else:
         limit_str = request.args.get('limit')
         limit = int(limit_str) if limit_str is not None else DEFAULT_RESOURCE_LENGTH
         rows = db_helper.select(resource, limit)
         if rows is not None:
             elem_array = list(map(flatten, rows))
-            return json.loads(json.dumps(elem_array, default=date_handler))
+            return jsonify(elem_array)
 
 @app.route('/resource', methods=['GET'])
-def get_resources():
+def get_resource_list():
     # List of resources from database
     list_of_lists = db_helper.select_resources()
     resource_list = [v for sublist in list_of_lists for v in sublist] # Flatten list of lists
