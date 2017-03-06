@@ -36,8 +36,6 @@ class ISODatetimeEncoder(JSONEncoder):
                 return obj.isoformat()
         except TypeError:
             pass
-        else:
-            return list(iterable)
         return JSONEncoder.default(self, obj)
 
 # Set up flask app variables
@@ -82,10 +80,10 @@ class NewsAPIResource(object): #TODO: Move to own file in module
         params[self.api_key_query] = self.api_key # add api key to params
         try:
             r = requests.get(self.endpoint, params)
-            return r.json()['articles']
+            return jsonify(r.json()['articles'])
         except:
             print ("Error retrieving data for {} at {}".format(self.name, self.endpoint))
-            return None
+            return jsonify(None)
 
 class GmailAPIResource(object): #TODO: Move to own file in module
     def __init__(self):
@@ -93,7 +91,10 @@ class GmailAPIResource(object): #TODO: Move to own file in module
     def get(self, params = {}): #TODO: use params, use session
         store = Storage(CREDENTIAL_PATH)
         credentials = store.get()
-        return self.gmail_client.get_json(credentials)
+        if credentials is None or credentials.invalid or credentials.access_token_expired:
+            return flask.redirect(flask.url_for('googlelogin'))
+        else:
+            return jsonify(self.gmail_client.get_json(credentials))
 
 @app.route('/googlelogin')
 def googlelogin():
@@ -104,7 +105,7 @@ def googlelogin():
     # if credentials is None or credentials.invalid: #TODO: Attempt to load from disk
     # if 'credentials' not in flask.session:
         # return flask.redirect(flask.url_for('googlecallback'))
-    if credentials is None or credentials.invalid or credentials.access_token_expired: #TODO: or expired
+    if credentials is None or credentials.invalid or credentials.access_token_expired:
         return flask.redirect(flask.url_for('googlecallback'))
         # credentials = client.OAuth2Credentials.from_json(credentials)
     else:
@@ -120,6 +121,7 @@ def googlecallback():
         scope=SCOPES,
         redirect_uri=flask.url_for('googlecallback', _external=True))
     flow.params['access_type'] = 'offline'
+    flow.params['include_granted_scopes'] = True
     if 'code' not in flask.request.args:
         auth_uri = flow.step1_get_authorize_url()
         return flask.redirect(auth_uri)
@@ -134,10 +136,10 @@ def googlecallback():
 # Add api endpoints
 @app.route('/resource/<string:resource>', methods=['GET'])
 def get_resource(resource):
-    # If it is a nondatabase resource, attempt query
+    # If it is a nondatabase resource, call the object's get function
     if resource in nondb_resource_dict.keys():
         args = request.args
-        return jsonify(nondb_resource_dict[resource].get(args)) #TODO: Limit amount returned
+        return nondb_resource_dict[resource].get(args) #TODO: Limit amount returned
     # Use database to build response
     else:
         limit_str = request.args.get('limit')
