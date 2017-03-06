@@ -12,39 +12,9 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
-# If modifying these scopes, delete your previously saved credentials
-# at /.credentials/
-SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
-APPLICATION_NAME = 'ESGT Backend'
-
 class Gmail(object):
-
-    def __init__(self, secret_file, credential_path):
-        self.secret_file = secret_file
-        self.credential_path = credential_path
-
-    def get_credentials(self):
-        """Gets valid user credentials from storage.
-
-        If nothing has been stored, or if the stored credentials are invalid,
-        the OAuth2 flow is completed to obtain the new credentials.
-
-        Returns:
-            Credentials, the obtained credential.
-        """
-
-        if not os.path.exists(os.path.dirname(self.credential_path)):
-            os.makedirs(os.path.dirname(self.credential_path))
-        store = Storage(self.credential_path)
-        credentials = store.get()
-        if not credentials or credentials.invalid:
-            flow = client.flow_from_clientsecrets(self.secret_file, SCOPES)
-            flow.user_agent = APPLICATION_NAME
-            flags = tools.argparser.parse_args([])
-            flags.noauth_local_webserver=False
-            credentials = tools.run_flow(flow, store, flags)
-            print('Storing credentials to ' + self.credential_path)
-        return credentials
+    def __init__(self):
+        pass
 
     def list_messages_with_labels(self, service, user_id, label_ids=[]):
         """List all Messages of the user's mailbox with label_ids applied.
@@ -158,22 +128,18 @@ class Gmail(object):
             'subject' : filter(lambda header: header['name'] == 'Subject', headers)[0]['value'],
             'content' : message['snippet']
         }
-
         return simplified_message
-    def get_json(self):
-        credentials = self.get_credentials()
+
+    def get_json(self, credentials):
+        """Get json list of messages in inbox
+
+        Arguments:
+            credentials : Credential object for authorizing access to Gmail API
+        """
         http = credentials.authorize(httplib2.Http())
         service = discovery.build('gmail', 'v1', http=http)
-
         messages = self.get_inbox_messages(service, "me")
         if messages is not None:
             return list(map(self.simplify_message, messages))
         else:
             print('Failed to retrieve message')
-
-def main():
-    gmail_api = Gmail('gmail_client_secret.json','./.credentials/gmail-session.json')
-    print (gmail_api.get_json())
-
-if __name__ == "__main__":
-    main()

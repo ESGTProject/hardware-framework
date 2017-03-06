@@ -7,15 +7,20 @@ Date created: 02/16/2017
 Date last modified: 03/01/2017
 Python Version: 2.7.11
 '''
-
+import flask
 from flask import Flask, jsonify, request
 from flask.json import JSONEncoder
 from flask_cors import CORS, cross_origin
 import sqlalchemy
 import json
 import pytz
+import os
 from datetime import datetime
 import requests
+from apiclient import discovery
+from oauth2client import client
+from oauth2client import tools
+from oauth2client.file import Storage
 
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
@@ -49,6 +54,8 @@ db_helper = None
 # Non database helper for other (non database backed up) resources
 nondb_resource_dict = {}
 
+CREDENTIAL_PATH = './.credentials/gmail-session.json'
+
 def flatten(row):
     """Adds timestamp to same row as json object stored in row.value
 
@@ -80,13 +87,49 @@ class NewsAPIResource(object): #TODO: Move to own file in module
             print ("Error retrieving data for {} at {}".format(self.name, self.endpoint))
             return None
 
-
 class GmailAPIResource(object): #TODO: Move to own file in module
-    def __init__(self, secret_file, credential_path):
-        self.gmail_client = gmail.Gmail(secret_file, credential_path)
-    def get(self, params = {}): #TODO: use params
-        return self.gmail_client.get_json()
+    def __init__(self):
+        self.gmail_client = gmail.Gmail()
+    def get(self, params = {}): #TODO: use params, use session
+        store = Storage(CREDENTIAL_PATH)
+        credentials = store.get()
+        return self.gmail_client.get_json(client.OAuth2Credentials.from_json(credentials))
 
+@app.route('/googlelogin')
+def googlelogin():
+    # Load saved session
+    store = Storage(CREDENTIAL_PATH)
+    credentials = store.get()
+
+    # if credentials is None or credentials.invalid: #TODO: Attempt to load from disk
+    # if 'credentials' not in flask.session:
+        # return flask.redirect(flask.url_for('googlecallback'))
+    if credentials is None or credentials.invalid or credentials.access_token_expired: #TODO: or expired
+        return flask.redirect(flask.url_for('googlecallback'))
+        # credentials = client.OAuth2Credentials.from_json(credentials)
+    else:
+        return jsonify({"Logged-in": "True"})
+
+SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
+APPLICATION_NAME = 'ESGT Backend'
+
+@app.route('/googlecallback')
+def googlecallback():
+    flow = client.flow_from_clientsecrets(
+        'gmail_client_secret.json',
+        scope=SCOPES,
+        redirect_uri=flask.url_for('googlecallback', _external=True))
+    flow.params['access_type'] = 'offline'
+    if 'code' not in flask.request.args:
+        auth_uri = flow.step1_get_authorize_url()
+        return flask.redirect(auth_uri)
+    else:
+        auth_code = flask.request.args.get('code')
+        credentials = flow.step2_exchange(auth_code)
+        # flask.session['credentials'] = credentials.to_json()
+        store = Storage(CREDENTIAL_PATH)
+        store.put(credentials)
+        return flask.redirect(flask.url_for('googlelogin'))
 
 # Add api endpoints
 @app.route('/resource/<string:resource>', methods=['GET'])
@@ -128,9 +171,13 @@ if __name__ == '__main__':
     if api_keys is None:
         raise IOError("API key file 'api_keys.json' not found")
 
+    # Create credential path
+    if not os.path.exists(os.path.dirname(CREDENTIAL_PATH)):
+        os.makedirs(os.path.dirname(CREDENTIAL_PATH))
+
     # Resources without database backend (route APIs)
     news_api = NewsAPIResource('news', 'https://newsapi.org/v1/articles', 'apiKey', api_keys["NEWS_API_KEY"])
-    gmail_api = GmailAPIResource('gmail_client_secret.json','./.credentials/gmail-session.json')
+    gmail_api = GmailAPIResource()
     nondb_resource_dict['news'] = news_api
     nondb_resource_dict['gmail'] = gmail_api
 
