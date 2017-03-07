@@ -21,13 +21,6 @@ services:
     links:
       - postgres:postgres
 
-  data:
-    restart: "no"
-    image: postgres:latest
-    volumes:
-      - data:/var/lib/postgresql
-    command: "true"
-   
   postgres:
     restart: "no"
     image: postgres:latest
