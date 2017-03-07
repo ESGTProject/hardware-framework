@@ -69,7 +69,7 @@ def flatten(row):
     dct["timestamp"] = pytz.utc.localize(row.time_created, is_dst=None).astimezone(pytz.utc)
     return dct
 
-class NewsAPIResource(object): #TODO: Move to own file in module
+class NewsAPIResource(object):
     def __init__(self, name, endpoint, api_key_query, api_key):
         self.name = name
         self.endpoint = endpoint
@@ -77,24 +77,39 @@ class NewsAPIResource(object): #TODO: Move to own file in module
         self.api_key = api_key
     def get(self, params = {}):
         params = params.to_dict()
+        # Extract limit if there is one
+        limit = DEFAULT_RESOURCE_LENGTH
+        if 'limit' in params:
+            limit = int(params['limit'])
+            del params['limit']
+        # Add api key to parameter
         params[self.api_key_query] = self.api_key # add api key to params
         try:
             r = requests.get(self.endpoint, params)
-            return jsonify(r.json()['articles'])
+            articles = r.json()['articles']
+            articles = articles if len(articles) <= limit else articles[:limit]
+            return jsonify(articles)
         except:
             print ("Error retrieving data for {} at {}".format(self.name, self.endpoint))
             return jsonify(None)
 
-class GmailAPIResource(object): #TODO: Move to own file in module
+class GmailAPIResource(object):
     def __init__(self):
         self.gmail_client = gmail.Gmail()
-    def get(self, params = {}): #TODO: use params, use session
+    def get(self, params = {}):
+        params = params.to_dict()
         store = Storage(CREDENTIAL_PATH)
         credentials = store.get()
         if credentials is None or credentials.invalid or credentials.access_token_expired:
             return flask.redirect(flask.url_for('googlelogin'))
         else:
-            return jsonify(self.gmail_client.get_json(credentials))
+            limit = DEFAULT_RESOURCE_LENGTH
+            if 'limit' in params:
+                limit = int(params['limit'])
+                del params['limit']
+            mail_list = self.gmail_client.get_json(credentials)
+            mail_list = mail_list if len(mail_list) <= limit else mail_list[:limit]
+            return jsonify(mail_list)
 
 @app.route('/googlelogin')
 def googlelogin():
@@ -137,7 +152,7 @@ def googlecallback():
 @app.route('/resource/<string:resource>', methods=['GET'])
 def get_resource(resource):
     # If it is a nondatabase resource, call the object's get function
-    if resource in nondb_resource_dict.keys():
+    if resource in nondb_resource_dict:
         args = request.args
         return nondb_resource_dict[resource].get(args) #TODO: Limit amount returned
     # Use database to build response
