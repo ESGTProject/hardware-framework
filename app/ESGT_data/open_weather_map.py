@@ -25,7 +25,7 @@ class OpenWeatherMap:
         self._current_weather_api = 'http://api.openweathermap.org/data/2.5/weather?id='
         self._forecast_weather_api = 'http://api.openweathermap.org/data/2.5/forecast?id='
     def time_converter(self, time):
-        converted_time = datetime.datetime.fromtimestamp(
+        converted_time = datetime.datetime.utcfromtimestamp(
                          int(time)
                          ).strftime('%I:%M %p')
         return converted_time
