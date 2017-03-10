@@ -27,7 +27,7 @@ class OpenWeatherMap:
     def time_converter(self, time):
         converted_time = datetime.datetime.utcfromtimestamp(
                          int(time)
-                         ).strftime('%I:%M %p')
+                         ).isoformat()
         return converted_time
 
     def set_city_id(self, new_id):
