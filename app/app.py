@@ -21,6 +21,7 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
+from oauth2client.client import HttpAccessTokenRefreshError
 
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
@@ -52,6 +53,7 @@ db_helper = None
 # Non database helper for other (non database backed up) resources
 nondb_resource_dict = {}
 
+CLIENT_SECRET_FILE = 'gmail_client_secret.json'
 CREDENTIAL_PATH = './.credentials/gmail-session.json'
 
 def flatten(row):
@@ -100,39 +102,35 @@ class GmailAPIResource(object):
         params = params.to_dict()
         store = Storage(CREDENTIAL_PATH)
         credentials = store.get()
-        if credentials is None or credentials.invalid or credentials.access_token_expired:
-            return flask.redirect(flask.url_for('googlelogin'))
-        else:
-            limit = DEFAULT_RESOURCE_LENGTH
-            if 'limit' in params:
-                limit = int(params['limit'])
-                del params['limit']
-            mail_list = self.gmail_client.get_json(credentials)
-            mail_list = mail_list if len(mail_list) <= limit else mail_list[:limit]
-            return jsonify(mail_list)
+	try:
+            if credentials is None or credentials.invalid or credentials.access_token_expired:
+	    	return "Invalid Credential or Token Timeout"
+            else:
+                limit = DEFAULT_RESOURCE_LENGTH
+                if 'limit' in params:
+                    limit = int(params['limit'])
+                    del params['limit']
+                mail_list = self.gmail_client.get_json(credentials)
+                mail_list = mail_list if len(mail_list) <= limit else mail_list[:limit]
+                return jsonify(mail_list)
+        except HttpAccessTokenRefreshError as e:
+	    return "Invalid Token"
 
+
+# Deprecated (for debugging only)
 @app.route('/googlelogin')
 def googlelogin():
-    # Load saved session
-    store = Storage(CREDENTIAL_PATH)
-    credentials = store.get()
-
-    # if credentials is None or credentials.invalid: #TODO: Attempt to load from disk
-    # if 'credentials' not in flask.session:
-        # return flask.redirect(flask.url_for('googlecallback'))
-    if credentials is None or credentials.invalid or credentials.access_token_expired:
-        return flask.redirect(flask.url_for('googlecallback'))
-        # credentials = client.OAuth2Credentials.from_json(credentials)
-    else:
-        return jsonify({"Logged-in": "True"})
+    # Attempt new login
+    return flask.redirect(flask.url_for('googlecallback'))
 
 SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
 APPLICATION_NAME = 'ESGT Backend'
 
+# Deprecated (for debugging only)
 @app.route('/googlecallback')
 def googlecallback():
     flow = client.flow_from_clientsecrets(
-        'gmail_client_secret.json',
+        CLIENT_SECRET_FILE,
         scope=SCOPES,
         redirect_uri=flask.url_for('googlecallback', _external=True))
     flow.params['access_type'] = 'offline'
@@ -146,9 +144,32 @@ def googlecallback():
         # flask.session['credentials'] = credentials.to_json()
         store = Storage(CREDENTIAL_PATH)
         store.put(credentials)
-        return flask.redirect(flask.url_for('googlelogin'))
+        return flask.redirect(flask.url_for('resource/gmail'))
 
-# Add api endpoints
+
+# POST receiver for mobile application that sends authentication code
+@app.route('/googleauth', methods=['GET', 'POST'])
+def googleauth():
+    if request.method == 'POST':
+        # Exchange auth code for access token, refresh token, and ID token
+        auth_code = request.form['auth_code']
+        credentials = client.credentials_from_clientsecrets_and_code(
+            filename=CLIENT_SECRET_FILE,
+            scope=['https://www.googleapis.com/auth/gmail.readonly', 'profile', 'email'],
+            code=auth_code,
+            redirect_uri=flask.url_for('googlecallback', _external=True))
+        store = Storage(CREDENTIAL_PATH)
+        store.put(credentials)
+        return auth_code
+    else:
+        store = Storage(CREDENTIAL_PATH)
+        credentials = store.get()
+        userid = credentials.id_token['sub']
+        email = credentials.id_token['email']
+        return userid + " " + email
+
+
+# Resource API endpoint
 @app.route('/resource/<string:resource>', methods=['GET'])
 def get_resource(resource):
     # If it is a nondatabase resource, call the object's get function
@@ -164,6 +185,7 @@ def get_resource(resource):
             elem_array = list(map(flatten, rows))
             return jsonify(elem_array)
 
+# Resource list API endpoint
 @app.route('/resource', methods=['GET'])
 def get_resource_list():
     # List of resources from database
