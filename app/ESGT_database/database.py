@@ -61,9 +61,13 @@ class DatabaseHelper(object):
     def select(self, name, limit=50):
         Session = sessionmaker(bind=self.engine)
         session = Session()
-        return session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(desc(Backlog.time_created)).limit(limit).all()
+        result = session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(desc(Backlog.time_created)).limit(limit).all()
+        session.close()
+        return result
 
     def select_resources(self):
         Session = sessionmaker(bind=self.engine)
         session = Session()
-        return session.query(Resource.name).order_by(Resource.name).all()
+        result = session.query(Resource.name).order_by(Resource.name).all()
+        session.close()
+        return result
