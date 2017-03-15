@@ -9,7 +9,7 @@ Python Version: 2.7.11
 '''
 
 # TODO: Sphinx documentation
-from sqlalchemy import Column, ForeignKey, Integer, String, JSON, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, JSON, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -34,3 +34,15 @@ class Resource(Base):
 
     def __repr__(self):
         return "<Resource(name='{}', value='{}', time_created='{}')>".format(self.name, self.value, self.time_created)
+
+class Configuration(Base):
+    __tablename__ = 'configuration'
+    id = Column(Integer, primary_key=True)
+    login_email = Column(String, nullable=False, unique=True)
+    refresh_tokens = Column(JSON, nullable=False)
+    display_name = Column(String, nullable=False)
+    news_source = Column(String, nullable=False)
+    weather_city = Column(String, nullable=False)
+    temperature_units = Column(Boolean, nullable=False)
+    time_zone = Column(String, nullable=False)
+    time_created = Column(DateTime(timezone=True), nullable=False)
