@@ -68,12 +68,15 @@ class OpenWeatherMap:
         day_list =  raw_forecast_api_dict['list'][:8]
         temp_max_list = []
         temp_min_list = []
+        forecast_dt_list = []
         rain_stat = 0
         for day_dict in day_list:
           # 8 data for a day 24 hrs /3 hrs = 8 data
+          forecast_dt_list.append(day_dict.get('dt_txt'))
           temp_max_list.append(day_dict.get('main').get('temp_max'))
           temp_min_list.append(day_dict.get('main').get('temp_min'))
-          if(day_dict.get('rain')): rain_stat += day_dict.get('rain').get('3h')
+          if(day_dict.get('rain')):
+            rain_stat += day_dict.get('rain').get('3h')
           #potential bug
         data = dict(
           city=raw_current_api_dict.get('name'), # same
@@ -91,13 +94,15 @@ class OpenWeatherMap:
           wind=raw_current_api_dict.get('wind').get('speed'),
           wind_deg=raw_current_api_dict.get('deg'),
           dt=self.time_converter(raw_current_api_dict.get('dt')),
-          cloudiness=raw_current_api_dict.get('clouds').get('all')
+          cloudiness=raw_current_api_dict.get('clouds').get('all'),
+          forecast_ave=[ (x + y) / 2.0 for x, y in zip(temp_min_list, temp_max_list)],
+          forecast_dt = forecast_dt_list 
         )
         return data
 
 if __name__ == '__main__':
     try:
-        w = OpenWeatherMap()
+        w = OpenWeatherMap(key)
         print w.get_json()
     except IOError:
         print('no internet')
