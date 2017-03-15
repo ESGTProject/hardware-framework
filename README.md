@@ -31,7 +31,6 @@
         - example: `http://127.0.0.1:8000/resource/news?source=google-news`
 6. For Google authorization, go to http://127.0.0.1:8000/googlelogin
     * Input username and password information, and accept the access
-    * If the access is valid, subsequent accesses should yield json : `{"Logged-in": "True"}`
     * Now go to http://127.0.0.1/resource/gmail for list of emails in inbox
 #TODO: Instructions for google API creation with secret key
 

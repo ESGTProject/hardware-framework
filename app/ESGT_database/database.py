@@ -14,7 +14,7 @@ from sqlalchemy import MetaData
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import desc
 from datetime import datetime
-from .models import Base, Resource, Backlog
+from .models import Base, Resource, Backlog, Configuration
 
 # Database configuration
 USER_DEFAULT = 'postgres'
@@ -75,7 +75,7 @@ class DatabaseHelper(object):
     def insert_config(self, username, config, refresh_tokens):
         conn = self.engine.connect()
         now = datetime.utcnow()
-        insert_config_stmt = insert(Configuration.__table__).values(username=name, value=value, time_created=now)
+        insert_config_stmt = insert(Configuration.__table__).values(username=username, config=config, refresh_tokens=refresh_tokens, time_created=now)
         update_stmt = insert_config_stmt.on_conflict_do_update(
             index_elements=['username'],
             set_=dict(config=config, refresh_tokens=refresh_tokens)
