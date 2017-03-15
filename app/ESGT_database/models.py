@@ -4,7 +4,7 @@
 File name: models.py
 Author: Kairi Kozuma
 Date created: 02/27/2017
-Date last modified: 02/27/2017
+Date last modified: 03/15/2017
 Python Version: 2.7.11
 '''
 
@@ -38,7 +38,10 @@ class Resource(Base):
 class Configuration(Base):
     __tablename__ = 'configuration'
     id = Column(Integer, primary_key=True)
-    login_email = Column(String, nullable=False, unique=True)
+    username = Column(String, nullable=False, unique=True)
     refresh_tokens = Column(JSON, nullable=False)
     config = Column(JSON, nullable=False)
     time_created = Column(DateTime(timezone=True), nullable=False)
+
+    def __repr__(self):
+        return "<Configuration(username='{}', value='{}', time_created='{}')>".format(self.username, self.config, self.time_created)

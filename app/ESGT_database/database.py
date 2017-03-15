@@ -58,7 +58,7 @@ class DatabaseHelper(object):
         conn.execute(insert_backlog_stmt)
         conn.close()
 
-    def select(self, name, limit=50):
+    def select(self, name, limit):
         Session = sessionmaker(bind=self.engine)
         session = Session()
         result = session.query(Backlog).join(Resource).filter(Resource.name==name).order_by(desc(Backlog.time_created)).limit(limit).all()
@@ -69,5 +69,23 @@ class DatabaseHelper(object):
         Session = sessionmaker(bind=self.engine)
         session = Session()
         result = session.query(Resource.name).order_by(Resource.name).all()
+        session.close()
+        return result
+
+    def insert_config(self, username, config, refresh_tokens):
+        conn = self.engine.connect()
+        now = datetime.utcnow()
+        insert_config_stmt = insert(Configuration.__table__).values(username=name, value=value, time_created=now)
+        update_stmt = insert_config_stmt.on_conflict_do_update(
+            index_elements=['username'],
+            set_=dict(config=config, refresh_tokens=refresh_tokens)
+        )
+        conn.execute(update_stmt)
+        conn.close()
+
+    def select_config(self, username):
+        Session = sessionmaker(bind=self.engine)
+        session = Session()
+        result = session.query(Configuration).filter(Configuration.username==username).all()
         session.close()
         return result
