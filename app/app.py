@@ -199,7 +199,7 @@ def config():
         user = request.args.get('username')
         if user is not None:
             row = db_helper.select_config(user)
-            return jsonify(row)
+            return jsonify(row[0].config) #TODO Fix datetime serialization error
         else:
             return 'config GET failure'
     else:
