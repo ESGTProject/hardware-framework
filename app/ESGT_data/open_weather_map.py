@@ -92,7 +92,7 @@ class OpenWeatherMap:
           sunrise=self.time_converter(raw_current_api_dict.get('sys').get('sunrise')),
           sunset=self.time_converter(raw_current_api_dict.get('sys').get('sunset')),
           wind=raw_current_api_dict.get('wind').get('speed'),
-          wind_deg=raw_current_api_dict.get('deg'),
+          wind_deg=raw_current_api_dict.get('wind').get('deg'),
           dt=self.time_converter(raw_current_api_dict.get('dt')),
           cloudiness=raw_current_api_dict.get('clouds').get('all'),
           forecast_ave=[ (x + y) / 2.0 for x, y in zip(temp_min_list, temp_max_list)],
