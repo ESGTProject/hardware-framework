@@ -29,9 +29,29 @@
     * `?source=<news source>` For `/resource/news` endpoint only, (REQUIRED)
         - [List of sources] (https://newsapi.org/sources)
         - example: `http://127.0.0.1:8000/resource/news?source=google-news`
-6. For Google authorization, go to http://127.0.0.1:8000/googlelogin
+
+6. For Gmail support, follow the steps below
+    * Log into the [Google API console] (https://console.developers.google.com)
+    * Create a new project if one does not exist (Name it whatever you wish)
+    * Click on Credentials in the left pane
+    * Click on the "Create credentials" button and select "OAuth client ID"
+    * Choose "Web application" for application type
+        * Name it whatever you wish
+        * Add the following to authorized JavaScript origins (using your domain name)
+            - http://127.0.0.1:8000
+            - http://your-domain-name:8000
+        * Add the following to the authorized redirect URIs (Note that this is for DEPRECATED feature of logging in through web!)
+            - http://127.0.0.1:8000/googlecallback
+            - http://your-domain-name:8000/googlecallback
+    * Click create to finish
+    * Click on the download icon in the far right to download the client secret json
+    * Rename the secret to "gmail_client_secret.json" and put it in /app directory of the project folder
+
+DEPRECATED (This is left for development purposes)
+1. For Google authorization, go to http://127.0.0.1:8000/googlelogin
     * Input username and password information, and accept the access
     * Now go to http://127.0.0.1/resource/gmail for list of emails in inbox
+
 #TODO: Instructions for google API creation with secret key
 
 ##Trouble shooting macOS
