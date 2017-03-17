@@ -109,8 +109,8 @@ class GmailAPIResource(object):
 
     def get(self, params={}):
         params = params.to_dict()
-        store = Storage(CREDENTIAL_PATH)
-        credentials = store.get()
+        username = params["username"]
+        credentials = get_stored_credentials(username)
         try:
             if credentials is None or credentials.invalid or credentials.access_token_expired:
                 return "Invalid Credential or Token Timeout"
@@ -150,9 +150,6 @@ def googlecallback():
     else:
         auth_code = flask.request.args.get('code')
         credentials = flow.step2_exchange(auth_code)
-        # flask.session['credentials'] = credentials.to_json()
-        store = Storage(CREDENTIAL_PATH)
-        store.put(credentials)
         return flask.redirect(flask.url_for('resource/gmail'))
 
 
@@ -160,46 +157,60 @@ def googlecallback():
 @app.route('/googleauth', methods=['GET', 'POST'])
 def googleauth():
     if request.method == 'POST':
+        print ('Received', request.json)
+        username = request.json['username']
+        auth_code = request.json['auth_code']
         # Exchange auth code for access token, refresh token, and ID token
-        auth_code = request.form['auth_code']
         credentials = client.credentials_from_clientsecrets_and_code(
             filename=CLIENT_SECRET_FILE,
             scope=['https://www.googleapis.com/auth/gmail.readonly',
                    'profile', 'email'],
             code=auth_code,
             redirect_uri=flask.url_for('googlecallback', _external=True))
-        store = Storage(CREDENTIAL_PATH)
-        store.put(credentials)
-        return auth_code
+        store_credentials(username, credentials)
+	return "successful login"
     elif request.method == 'GET':
-        store = Storage(CREDENTIAL_PATH)
-        credentials = store.get()
-        userid = credentials.id_token['sub']
-        email = credentials.id_token['email']
-        return userid + " " + email
+        print ('Received', request.json)
+        user = request.json['username']
+        credentials = get_stored_credentials(user)
+        if credentials is None:
+	    email = credentials.id_token['email']
+	    return email
+        else:
+            return 'No valid token'
     else:
         return None
 
+def get_stored_credentials(username):
+    row = db_helper.select_credentials(username)
+    try:
+        print (row[0][0])
+        json = row[0][0]
+        return client.Credentials.new_from_json(json)
+    except IndexError as e:
+        return None
+
+def store_credentials(username, credentials):
+    json = credentials.to_json();
+    row = db_helper.insert_credentials(username, json)
 
 # Configuration endpoint TODO: Authentication of user
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method == 'POST':
-        if request.headers['Content-Type'] == 'application/json':
-            post_args = request.json
-            user = post_args['username']
-            config = post_args['config']
-            refresh_tokens = post_args['refresh_tokens']
-            if user is not None and config is not None and refresh_tokens is not None:
-                db_helper.insert_config(user, config, refresh_tokens)
-                return 'config POST success'
+        print ('Received', request.json)
+        user = request.json['username']
+        config = request.json['config']
+        if user is not None and config is not None:
+	    db_helper.insert_config(user, config)
+	    return 'config POST success'
         else:
             return 'config POST failure'
     elif request.method == 'GET':
         user = request.args.get('username')
         if user is not None:
             row = db_helper.select_config(user)
-            return jsonify(row[0].config) #TODO Fix datetime serialization error
+            return jsonify(row[0])
         else:
             return 'config GET failure'
     else:

@@ -39,8 +39,8 @@ class Configuration(Base):
     __tablename__ = 'configuration'
     id = Column(Integer, primary_key=True)
     username = Column(String, nullable=False, unique=True)
-    refresh_tokens = Column(JSON, nullable=False)
-    config = Column(JSON, nullable=False)
+    refresh_tokens = Column(JSON, nullable=True)
+    config = Column(JSON, nullable=True)
     time_created = Column(DateTime(timezone=True), nullable=False)
 
     def __repr__(self):
