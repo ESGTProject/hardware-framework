@@ -4,12 +4,12 @@
 File name: models.py
 Author: Kairi Kozuma
 Date created: 02/27/2017
-Date last modified: 02/27/2017
+Date last modified: 03/15/2017
 Python Version: 2.7.11
 '''
 
 # TODO: Sphinx documentation
-from sqlalchemy import Column, ForeignKey, Integer, String, JSON, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, JSON, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -34,3 +34,14 @@ class Resource(Base):
 
     def __repr__(self):
         return "<Resource(name='{}', value='{}', time_created='{}')>".format(self.name, self.value, self.time_created)
+
+class Configuration(Base):
+    __tablename__ = 'configuration'
+    id = Column(Integer, primary_key=True)
+    username = Column(String, nullable=False, unique=True)
+    refresh_tokens = Column(JSON, nullable=True)
+    config = Column(JSON, nullable=True)
+    time_created = Column(DateTime(timezone=True), nullable=False)
+
+    def __repr__(self):
+        return "<Configuration(username='{}', value='{}', time_created='{}')>".format(self.username, self.config, self.time_created)
