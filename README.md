@@ -13,7 +13,17 @@
         * `docker-compose run app /usr/local/bin/python setup.py clean --rm`
 4. Run `docker-compose up -d` to launch containers as background daemons.
 
-5. Access RESTful api on localhost, port 8000.
+## API
+
+1. Config endpoints (requires Android App)
+    Get configuration per user
+    * `http://127.0.0.1:8000/config`
+
+    Parameters:
+    * `?username=<username>` email of user (REQUIRED)
+    * example: `http://127.0.0.1:8000/config?username=myemail@gmail.com
+
+2. Resource endpoints
     Get list of resource endpoints:
     * `http://127.0.0.1:8000/resource`
     * [Resources] (http://127.0.0.1:8000/resource)
@@ -30,7 +40,13 @@
         - [List of sources] (https://newsapi.org/sources)
         - example: `http://127.0.0.1:8000/resource/news?source=google-news`
 
-6. For Gmail support, follow the steps below
+    Gmail support (requires Android App):
+    * Gmail requires authorization to access Gmail services via OAuth
+    * The Android Application allows users to send OAuth tokens to the backend server
+    * After successful authorization, the API endpoint to access is at (replace USERNAME with email)
+        - `http://127.0.0.1:8000/resource/gmail?username=USERNAME
+
+3. For Gmail support, follow the steps below
     * Log into the [Google API console] (https://console.developers.google.com)
     * Create a new project if one does not exist (Name it whatever you wish)
     * Click on Credentials in the left pane
@@ -51,8 +67,6 @@ DEPRECATED (This is left for development purposes)
 1. For Google authorization, go to http://127.0.0.1:8000/googlelogin
     * Input username and password information, and accept the access
     * Now go to http://127.0.0.1/resource/gmail for list of emails in inbox
-
-#TODO: Instructions for google API creation with secret key
 
 ##Trouble shooting macOS
 ### 1. To install psycopg2, install postgresql first
