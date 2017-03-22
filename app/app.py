@@ -17,6 +17,7 @@ import pytz
 import os
 from datetime import datetime
 import requests
+import httplib2
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
@@ -113,6 +114,10 @@ class GmailAPIResource(object):
             return "required parameter 'username' missing"
         username = params["username"]
         credentials = get_stored_credentials(username)
+        # Refresh token if expired
+        if credentials.access_token_expired:
+            credentials.refresh(httplib2.Http())
+            store_credentials(username, credentials)
 
         # Use limit to limit output
         params = params.to_dict()
@@ -123,7 +128,7 @@ class GmailAPIResource(object):
 
         # Attempt to get gmail inbox
         try:
-            if credentials is None or credentials.invalid or credentials.access_token_expired:
+            if credentials is None or credentials.invalid:
                 return "Invalid Credential or Token Timeout"
             else:
                 mail_list = self.gmail_client.get_json(credentials)
@@ -195,14 +200,14 @@ def googleauth():
             code=auth_code,
             redirect_uri=flask.url_for('googlecallback', _external=True))
         store_credentials(username, credentials)
-	return "successful login"
+        return "successful login"
     elif request.method == 'GET':
         print ('Received', request.json)
         user = request.json['username']
         credentials = get_stored_credentials(user)
         if credentials is None:
-	    email = credentials.id_token['email']
-	    return email
+            email = credentials.id_token['email']
+            return email
         else:
             return 'No valid token'
     else:
@@ -234,8 +239,8 @@ def config():
         user = request.json['username']
         config = request.json['config']
         if user is not None and config is not None:
-	    db_helper.insert_config(user, config)
-	    return 'config POST success'
+        db_helper.insert_config(user, config)
+        return 'config POST success'
         else:
             return 'config POST failure'
     elif request.method == 'GET':
