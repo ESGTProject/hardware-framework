@@ -23,17 +23,18 @@ DB_ESGT = 'esgt'
 DB_DEFAULT = 'postgres'
 
 class DatabaseHelper(object):
-    def __init__(self, user, host, database):
+    def __init__(self, user, password, host, database):
         self.user = user
+        self.password = password
         self.host = host
         self.database = database
         self.engine = None
 
     def connect(self):
-        self.engine = sqlalchemy.create_engine("postgres://{}@{}/{}".format(self.user, self.host, self.database), echo=True)
+        self.engine = sqlalchemy.create_engine("postgres://{}:{}@{}/{}".format(self.user, self.password, self.host, self.database), echo=True)
 
     def create_database(self):
-        engine = sqlalchemy.create_engine("postgres://{}@{}/{}".format(self.user, self.host, DB_DEFAULT), echo=True)
+        engine = sqlalchemy.create_engine("postgres://{}:{}@{}/{}".format(self.user, self.password, self.host, DB_DEFAULT), echo=True)
         conn = engine.connect()
         conn.execute("commit")
         conn.execute("CREATE DATABASE {}".format(self.database))
