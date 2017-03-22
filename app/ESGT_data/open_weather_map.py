@@ -14,8 +14,7 @@ resouce from:
 '''
 import datetime
 import json
-from urllib2 import urlopen
-
+import requests
 
 class OpenWeatherMap:
     def __init__(self, api_key):
@@ -42,13 +41,7 @@ class OpenWeatherMap:
         full_api_url = api + str(self._city_id) + '&mode=json&units=' + unit + '&APPID=' + self._api_key
         return full_api_url
     def data_fetch(self,full_api_url):
-        url = urlopen(full_api_url)
-        # output = url.read().decode('utf-8')
-        output = url.read()
-        raw_api_dict = json.loads(output)
-        #raw_api_dict = json.loads(url.read())
-        url.close()
-        return raw_api_dict
+        return requests.get(full_api_url).json()
     def get_json(self, location): #TODO:Use params
         """
            return json string for database to use
