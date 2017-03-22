@@ -26,7 +26,9 @@ from oauth2client.client import HttpAccessTokenRefreshError
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
 
-from ESGT_data import gmail  # TODO: Cache in database?
+from ESGT_data import gmail
+from ESGT_data import open_weather_map
+# TODO: Cache in database?
 
 
 class ISODatetimeEncoder(JSONEncoder):
@@ -77,8 +79,7 @@ def flatten(row):
 
 
 class NewsAPIResource(object):
-    def __init__(self, name, endpoint, api_key_query, api_key):
-        self.name = name
+    def __init__(self, endpoint, api_key_query, api_key):
         self.endpoint = endpoint
         self.api_key_query = api_key_query
         self.api_key = api_key
@@ -98,8 +99,7 @@ class NewsAPIResource(object):
             articles = articles if len(articles) <= limit else articles[:limit]
             return jsonify(articles)
         except:
-            print ("Error retrieving data for {} at {}".format(
-                self.name, self.endpoint))
+            print ("NewsAPI Error:{}".format(self.endpoint))
             return jsonify(None)
 
 
@@ -108,23 +108,49 @@ class GmailAPIResource(object):
         self.gmail_client = gmail.Gmail()
 
     def get(self, params={}):
-        params = params.to_dict()
+        # Get credentials from username
+        if "username" not in params:
+            return "required parameter 'username' missing"
         username = params["username"]
         credentials = get_stored_credentials(username)
+
+        # Use limit to limit output
+        params = params.to_dict()
+        limit = DEFAULT_RESOURCE_LENGTH
+        if 'limit' in params:
+            limit = int(params['limit'])
+            del params['limit']
+
+        # Attempt to get gmail inbox
         try:
             if credentials is None or credentials.invalid or credentials.access_token_expired:
                 return "Invalid Credential or Token Timeout"
             else:
-                limit = DEFAULT_RESOURCE_LENGTH
-                if 'limit' in params:
-                    limit = int(params['limit'])
-                    del params['limit']
                 mail_list = self.gmail_client.get_json(credentials)
-                mail_list = mail_list if len(
-                    mail_list) <= limit else mail_list[:limit]
+                mail_list = mail_list if len(mail_list) <= limit else mail_list[:limit]
                 return jsonify(mail_list)
         except HttpAccessTokenRefreshError as e:
             return "Invalid Token"
+
+class WeatherAPIResource(object):
+    def __init__(self, api_key):
+        self.weather_client = open_weather_map.OpenWeatherMap(api_key)
+
+    def get(self, params={}):
+        # Get required location parameter
+        if "location" not in params:
+            return "required parameter 'location' missing"
+        location = params["location"]
+
+        # Use limit to limit output
+        params = params.to_dict()
+        limit = DEFAULT_RESOURCE_LENGTH
+        if 'limit' in params:
+            limit = int(params['limit'])
+            del params['limit']
+
+        weather_json = json.loads(self.weather_client.get_json(location));
+        return jsonify(weather_json)
 
 SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
 APPLICATION_NAME = 'ESGT Backend'
@@ -134,6 +160,7 @@ APPLICATION_NAME = 'ESGT Backend'
 def googlelogin():
     # Attempt new login
     return flask.redirect(flask.url_for('googlecallback'))
+
 
 # Deprecated (for debugging only)
 @app.route('/googlecallback')
@@ -150,7 +177,7 @@ def googlecallback():
     else:
         auth_code = flask.request.args.get('code')
         credentials = flow.step2_exchange(auth_code)
-        return flask.redirect(flask.url_for('resource/gmail'))
+        return flask.redirect(flask.url_for('resource/gmail', _external=True))
 
 
 # POST receiver for mobile application that sends authentication code
@@ -181,6 +208,8 @@ def googleauth():
     else:
         return None
 
+
+# Helper method to get stored credentials (token)
 def get_stored_credentials(username):
     row = db_helper.select_credentials(username)
     try:
@@ -190,9 +219,12 @@ def get_stored_credentials(username):
     except IndexError as e:
         return None
 
+
+# Helper method to store credentials in database (token)
 def store_credentials(username, credentials):
     json = credentials.to_json();
     row = db_helper.insert_credentials(username, json)
+
 
 # Configuration endpoint TODO: Authentication of user
 @app.route('/config', methods=['GET', 'POST'])
@@ -234,6 +266,7 @@ def get_resource(resource):
             elem_array = list(map(flatten, rows))
             return jsonify(elem_array)
 
+
 # Resource list API endpoint
 @app.route('/resource', methods=['GET'])
 def get_resource_list():
@@ -264,11 +297,13 @@ if __name__ == '__main__':
         os.makedirs(os.path.dirname(CREDENTIAL_PATH))
 
     # Resources without database backend (route APIs)
-    news_api = NewsAPIResource(
-        'news', 'https://newsapi.org/v1/articles', 'apiKey', config["NEWS_API_KEY"])
+    news_api = NewsAPIResource('https://newsapi.org/v1/articles', 'apiKey', config["NEWS_API_KEY"])
     gmail_api = GmailAPIResource()
+    weather_api = WeatherAPIResource(config["OWM_API_KEY"])
+
     nondb_resource_dict['news'] = news_api
     nondb_resource_dict['gmail'] = gmail_api
+    nondb_resource_dict['weather'] = weather_api
 
     # Run micro server
     app.run(debug=True, host="0.0.0.0", port=8000)

@@ -19,9 +19,8 @@ from urllib2 import urlopen
 
 class OpenWeatherMap:
     def __init__(self, api_key):
-    # use Atlanta as default
         self._api_key = api_key
-        self._city_id = '4180439'
+        self._city_id = '4180439' #Atlanta is default
         self._current_weather_api = 'http://api.openweathermap.org/data/2.5/weather?id='
         self._forecast_weather_api = 'http://api.openweathermap.org/data/2.5/forecast?id='
     def time_converter(self, time):
@@ -50,10 +49,11 @@ class OpenWeatherMap:
         #raw_api_dict = json.loads(url.read())
         url.close()
         return raw_api_dict
-    def get_json(self):
+    def get_json(self, location): #TODO:Use params
         """
            return json string for database to use
         """
+        self._city_id = location
         current_weather_data = self.data_fetch(self.url_builder(self._current_weather_api))
         forecast_weather_data = self.data_fetch(self.url_builder(self._forecast_weather_api))
         # we only need the first day forcast
@@ -96,7 +96,7 @@ class OpenWeatherMap:
           dt=self.time_converter(raw_current_api_dict.get('dt')),
           cloudiness=raw_current_api_dict.get('clouds').get('all'),
           forecast_ave=[ (x + y) / 2.0 for x, y in zip(temp_min_list, temp_max_list)],
-          forecast_dt = forecast_dt_list 
+          forecast_dt = forecast_dt_list
         )
         return data
 

@@ -13,7 +13,6 @@ logging.basicConfig()
 from ESGT_data.mbed_sensor import MbedSensor
 from ESGT_data.sensor import Sensor
 from ESGT_data.fake_sensor import FakeSensor
-from ESGT_data.open_weather_map import OpenWeatherMap
 import sqlalchemy
 import json
 
@@ -50,14 +49,11 @@ def main():
     db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
-    # Load API keys
-    owm = OpenWeatherMap(config["OWM_API_KEY"])
     #mbed = MbedSensor()
 
     # Initialize job list
     job_list = [
         #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}, #TODO: Dynamically handle if not on Raspberry Pi
-        Job('weather', owm.get_json, 60 * 30),
     ]
 
     # Create fake data for testing #TODO: Handle dynamically

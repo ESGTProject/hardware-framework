@@ -36,15 +36,22 @@
 
     Supported parameters:
     * `?limit=<num>` Limits the number of results returned
-    * `?source=<news source>` For `/resource/news` endpoint only, (REQUIRED)
+
+    NewsAPI:
+    * `?source=<news source>` For `/resource/news` endpoint only (REQUIRED)
         - [List of sources] (https://newsapi.org/sources)
         - example: `http://127.0.0.1:8000/resource/news?source=google-news`
 
-    Gmail support (requires Android App):
+    WeatherAPI:
+    * `?location=<city id>` For `/resource/weather` endpoint only (REQUIRED)
+        - [List of city IDs] (http://openweathermap.org/help/city_list.txt)
+        - example: `http://127.0.0.1:8000/resource/news?location=418039`
+
+    GmailAPI (requires Android App):
     * Gmail requires authorization to access Gmail services via OAuth
     * The Android Application allows users to send OAuth tokens to the backend server
     * After successful authorization, the API endpoint to access is at (replace USERNAME with email)
-        - `http://127.0.0.1:8000/resource/gmail?username=USERNAME
+        - `http://127.0.0.1:8000/resource/gmail?username=<username>`
 
 3. For Gmail support, follow the steps below
     * Log into the [Google API console] (https://console.developers.google.com)
