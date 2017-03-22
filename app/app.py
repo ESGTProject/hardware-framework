@@ -248,17 +248,16 @@ def get_resource_list():
 
 if __name__ == '__main__':
     # Instantiate database
-    host = 'postgres'
-    user = 'postgres'
-    db_helper = DatabaseHelper(host, user, ESGT_database.database.DB_ESGT)
+    config = None
+    with open('config.json') as json_file:
+        config = json.load(json_file)
+    if config is None:
+        raise IOError("Configuration file 'config.json' not found")
+    user = config['user']
+    password = config['password']
+    host = config['host']
+    db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     db_helper.connect()
-
-    # Load API keys
-    api_keys = None
-    with open('api_keys.json') as json_file:
-        api_keys = json.load(json_file)
-    if api_keys is None:
-        raise IOError("API key file 'api_keys.json' not found")
 
     # Create credential path
     if not os.path.exists(os.path.dirname(CREDENTIAL_PATH)):
@@ -266,11 +265,10 @@ if __name__ == '__main__':
 
     # Resources without database backend (route APIs)
     news_api = NewsAPIResource(
-        'news', 'https://newsapi.org/v1/articles', 'apiKey', api_keys["NEWS_API_KEY"])
+        'news', 'https://newsapi.org/v1/articles', 'apiKey', config["NEWS_API_KEY"])
     gmail_api = GmailAPIResource()
     nondb_resource_dict['news'] = news_api
     nondb_resource_dict['gmail'] = gmail_api
 
     # Run micro server
     app.run(debug=True, host="0.0.0.0", port=8000)
-    #app.run(debug=True, host="localhost", port=8000)

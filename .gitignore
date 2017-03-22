@@ -1,5 +1,5 @@
 /.idea
 *.pyc
 gmail_client_secret.json
-api_keys.json
+config.json
 app/.credentials

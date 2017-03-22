@@ -14,7 +14,15 @@ import sys
 
 def main():
     # Create database and tables
-    db_helper = DatabaseHelper(ESGT_DB.USER_DEFAULT, ESGT_DB.HOST_DEFAULT, ESGT_DB.DB_ESGT)
+    config = None
+    with open('config.json') as json_file:
+        config = json.load(json_file)
+    if config is None:
+        raise IOError("Configuration file 'config.json' not found")
+    user = config['user']
+    password = config['password']
+    host = config['host']
+    db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     try:
         db_helper.create_database()
     except sqlalchemy.exc.ProgrammingError:

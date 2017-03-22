@@ -39,26 +39,25 @@ def update_db_worker(db_helper, job):
 
 def main():
     # Instantiate database helper
-    host = 'postgres'
-    user = 'postgres'
-    db_helper = DatabaseHelper(host, user, ESGT_database.database.DB_ESGT)
+    config = None
+    with open('config.json') as json_file:
+        config = json.load(json_file)
+    if config is None:
+        raise IOError("Configuration file 'config.json' not found")
+    user = config['user']
+    password = config['password']
+    host = config['host']
+    db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
     # Load API keys
-    api_keys = None
-    with open('api_keys.json') as json_file:
-        api_keys = json.load(json_file)
-    if api_keys is None:
-        raise IOError("API key file 'api_keys.json' not found")
-
-    # Initialize objects
-    owm = OpenWeatherMap(api_keys["OWM_API_KEY"])
+    owm = OpenWeatherMap(config["OWM_API_KEY"])
     #mbed = MbedSensor()
 
     # Initialize job list
     job_list = [
         #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}, #TODO: Dynamically handle if not on Raspberry Pi
-        Job('weather', owm.get_json, 60 * 5),
+        Job('weather', owm.get_json, 60 * 30),
     ]
 
     # Create fake data for testing #TODO: Handle dynamically
