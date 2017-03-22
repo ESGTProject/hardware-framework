@@ -11,6 +11,7 @@ from ESGT_database import database as ESGT_DB
 from ESGT_database.database import DatabaseHelper
 import sqlalchemy
 import sys
+import json
 
 def main():
     # Create database and tables
@@ -22,7 +23,7 @@ def main():
     user = config['user']
     password = config['password']
     host = config['host']
-    db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
+    db_helper = DatabaseHelper(user, password, host, ESGT_DB.DB_ESGT)
     try:
         db_helper.create_database()
     except sqlalchemy.exc.ProgrammingError:
