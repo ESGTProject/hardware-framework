@@ -30,7 +30,7 @@ def main():
         print ("Database already exists")
     db_helper.connect()
     # Option to clean tables with setup.py clean
-    if (len(sys.argv) != 0 and sys.argv[1] == 'clean'):
+    if (len(sys.argv) < 1 and sys.argv[1] == 'clean'):
         db_helper.drop_tables()
     db_helper.create_tables()
 
