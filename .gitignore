@@ -3,3 +3,4 @@
 gmail_client_secret.json
 config.json
 app/.credentials
+env
