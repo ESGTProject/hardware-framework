@@ -1,5 +1,5 @@
 # Author: Kairi Kozuma Boa-Lin Lai
-# Python: 2.7.9
+# Python: 3.6.0
 # Date  : 02/01/2017
 
 # Libraries needed
@@ -7,12 +7,14 @@
 # Attempt import of RPi, show warning if exception occurs (for testing on non Raspberry Pi)
 try:
     import RPi.GPIO as GPIO
-except RuntimeError, e:
-  print('Not on a Raspberry Pi: ' + str(e))
+except RuntimeError as err:
+    print('Not on a Raspberry Pi: ' + str(err))
+except ModuleNotFoundError as err:
+    print('RPi module not installed' + str(err))
 
 import time
 import serial
-from sensor import Sensor
+from .sensor import Sensor
 #function w/ # data pts to read and at what frequency (reads per sec?)
 # private var for chaning time interval
 

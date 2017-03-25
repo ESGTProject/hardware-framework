@@ -1,5 +1,5 @@
 '''
-python 2.7.10
+python 3.6.0
 
 Author Boa-Lin Lai
 
@@ -96,6 +96,6 @@ class OpenWeatherMap:
 if __name__ == '__main__':
     try:
         w = OpenWeatherMap(key)
-        print w.get_json()
+        print (w.get_json())
     except IOError:
         print('no internet')

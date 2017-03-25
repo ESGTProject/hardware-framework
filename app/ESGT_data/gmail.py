@@ -46,7 +46,7 @@ class Gmail(object):
                 messages.extend(response['messages'])
 
             return messages
-        except errors.HttpError, error:
+        except errors.HttpError as error:
             print ('An error occurred: %{}'.format(error))
 
     def get_message(self, service, user_id, msg_id):
@@ -63,7 +63,7 @@ class Gmail(object):
         """
         try:
             return service.users().messages().get(userId=user_id, id=msg_id).execute()
-        except errors.HttpError, error:
+        except errors.HttpError as error:
             print('An error occurred: {}'.format(error))
 
 
@@ -85,7 +85,7 @@ class Gmail(object):
             msg_str = base64.urlsafe_b64decode(message['raw'].encode('ASCII'))
             mime_msg = email.message_from_string(msg_str)
             return mime_msg
-        except errors.HttpError, error:
+        except errors.HttpError as error:
             print('An error occurred: {}'.format(error))
 
     def get_inbox_messages(self, service, user_id):
