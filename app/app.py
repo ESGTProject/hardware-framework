@@ -15,9 +15,10 @@ import sqlalchemy
 import json
 import pytz
 import os
-from datetime import datetime
+import pyrebase
 import requests
 import httplib2
+from datetime import datetime
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
@@ -291,15 +292,11 @@ if __name__ == '__main__':
         config = json.load(json_file)
     if config is None:
         raise IOError("Configuration file 'config.json' not found")
-    user = config['user']
-    password = config['password']
-    host = config['host']
+    user = config['database']['user']
+    password = config['database']['password']
+    host = config['database']['host']
     db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     db_helper.connect()
-
-    # Create credential path
-    if not os.path.exists(os.path.dirname(CREDENTIAL_PATH)):
-        os.makedirs(os.path.dirname(CREDENTIAL_PATH))
 
     # Resources without database backend (route APIs)
     news_api = NewsAPIResource('https://newsapi.org/v1/articles', 'apiKey', config["NEWS_API_KEY"])
@@ -309,6 +306,22 @@ if __name__ == '__main__':
     nondb_resource_dict['news'] = news_api
     nondb_resource_dict['gmail'] = gmail_api
     nondb_resource_dict['weather'] = weather_api
+
+    # Setup firebase database
+    firebase = pyrebase.initialize_app(config['firebase'])
+    firebase_db = firebase.database();
+
+    # Get unique ID for device (if not present in config, or if id is not present in firebase)
+    serial_number = "SERIALNUMBERTEMP" #TODO: Set device ID based on hardware serial number
+    device_list = firebase_db.child("devices").get().val()
+    print (device_list)
+    if ("device_id" not in config) or (device_list is None) or (config["device_id"] not in device_list):
+        device = firebase_db.child("devices").push(serial_number)
+        config["device_id"] = device['name']
+        # Write updated config json to file
+        with open('config.json', 'w') as json_file:
+            json.dump(config, json_file)
+
 
     # Run micro server
     app.run(debug=True, host="0.0.0.0", port=8000)

@@ -2,5 +2,6 @@
 *.pyc
 gmail_client_secret.json
 config.json
+service_account_credentials.json
 app/.credentials
 env

@@ -5,3 +5,4 @@ pytz
 sqlalchemy
 google-api-python-client
 requests
+pyrebase
