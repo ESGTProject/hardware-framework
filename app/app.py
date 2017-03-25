@@ -239,8 +239,8 @@ def config():
         user = request.json['username']
         config = request.json['config']
         if user is not None and config is not None:
-        db_helper.insert_config(user, config)
-        return 'config POST success'
+            db_helper.insert_config(user, config)
+            return 'config POST success'
         else:
             return 'config POST failure'
     elif request.method == 'GET':
