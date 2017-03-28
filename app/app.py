@@ -30,8 +30,6 @@ from ESGT_database.database import DatabaseHelper
 
 from ESGT_data import gmail
 from ESGT_data import open_weather_map
-# TODO: Cache in database?
-
 
 class ISODatetimeEncoder(JSONEncoder):
     """Custom ISO format for json encoding of datetime objects"""
@@ -58,6 +56,12 @@ db_helper = None
 
 # Non database helper for other (non database backed up) resources
 nondb_resource_dict = {}
+
+# Firebase global instance
+firebase = None
+
+# JSON dictionary from config.json file
+device_uuid = None
 
 CLIENT_SECRET_FILE = 'gmail_client_secret.json'
 CREDENTIAL_PATH = './.credentials/gmail-session.json'
@@ -233,26 +237,16 @@ def store_credentials(username, credentials):
 
 
 # Configuration endpoint TODO: Authentication of user
-@app.route('/config', methods=['GET', 'POST'])
+@app.route('/config', methods=['GET'])
 def config():
-    if request.method == 'POST':
-        print ('Received', request.json)
-        user = request.json['username']
-        config = request.json['config']
-        if user is not None and config is not None:
-            db_helper.insert_config(user, config)
-            return 'config POST success'
+    if request.method == 'GET':
+        user = firebase_db.child('devices').child(device_uuid).child('user_current').get().val()
+        print (user)
+        if (user):
+            user_config = firebase_db.child('users').child(user).get().val()
         else:
-            return 'config POST failure'
-    elif request.method == 'GET':
-        user = request.args.get('username')
-        if user is not None:
-            row = db_helper.select_config(user)
-            return jsonify(row[0])
-        else:
-            return 'config GET failure'
-    else:
-        return 'Invalid config request'
+            user_config = None
+        return jsonify(user_config)
 
 
 # Resource API endpoint
@@ -287,7 +281,7 @@ def get_resource_list():
 
 if __name__ == '__main__':
     # Instantiate database
-    config = None
+    device_uuid = None
     with open('config.json') as json_file:
         config = json.load(json_file)
     if config is None:
@@ -311,17 +305,24 @@ if __name__ == '__main__':
     firebase = pyrebase.initialize_app(config['firebase'])
     firebase_db = firebase.database();
 
+    # Device config to send to Firebase
+    config_device = {}
+    config_device['serial_number'] = "SERIALNUMBERTEMP"
+    config_device['users_valid'] = ''
+    config_device['user_current'] = ''
+
     # Get unique ID for device (if not present in config, or if id is not present in firebase)
-    serial_number = "SERIALNUMBERTEMP" #TODO: Set device ID based on hardware serial number
     device_list = firebase_db.child("devices").get().val()
     print (device_list)
-    if ("device_id" not in config) or (device_list is None) or (config["device_id"] not in device_list):
-        device = firebase_db.child("devices").push(serial_number)
-        config["device_id"] = device['name']
+    if ('device_uuid' not in config) or (device_list is None) or (config['device_uuid'] not in device_list):
+        device = firebase_db.child('devices').push(config_device)
+        config['device_uuid'] = device['name']
         # Write updated config json to file
         with open('config.json', 'w') as json_file:
             json.dump(config, json_file)
 
+    # Set global uuid variable
+    device_uuid = config['device_uuid']
 
     # Run micro server
     app.run(debug=True, host="0.0.0.0", port=8000)

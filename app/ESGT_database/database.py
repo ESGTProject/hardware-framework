@@ -73,31 +73,13 @@ class DatabaseHelper(object):
         session.close()
         return result
 
-    def insert_config(self, username, config):
-        conn = self.engine.connect()
-        now = datetime.utcnow()
-        insert_config_stmt = insert(Configuration.__table__).values(username=username, config=config, time_created=now)
-        update_stmt = insert_config_stmt.on_conflict_do_update(
-            index_elements=['username'],
-            set_=dict(config=config,time_created=now)
-        )
-        conn.execute(update_stmt)
-        conn.close()
-
-    def select_config(self, username):
-        Session = sessionmaker(bind=self.engine)
-        session = Session()
-        result = session.query(Configuration.config).filter(Configuration.username==username).all()
-        session.close()
-        return result
-
     def select_credentials(self, username):
         Session = sessionmaker(bind=self.engine)
         session = Session()
         result = session.query(Configuration.refresh_tokens).filter(Configuration.username==username).all()
         session.close()
         return result
-        
+
     def insert_credentials(self, username, credentials):
         conn = self.engine.connect()
         now = datetime.utcnow()
