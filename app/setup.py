@@ -4,7 +4,7 @@ File name: setup.py
 Author: Kairi Kozuma
 Date created: 02/27/2017
 Date last modified: 02/27/2017
-Python Version: 2.7.11
+Python Version: 3.6.0
 '''
 
 from ESGT_database import database as ESGT_DB

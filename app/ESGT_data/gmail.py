@@ -46,7 +46,7 @@ class Gmail(object):
                 messages.extend(response['messages'])
 
             return messages
-        except errors.HttpError, error:
+        except errors.HttpError as error:
             print ('An error occurred: %{}'.format(error))
 
     def get_message(self, service, user_id, msg_id):
@@ -63,7 +63,7 @@ class Gmail(object):
         """
         try:
             return service.users().messages().get(userId=user_id, id=msg_id).execute()
-        except errors.HttpError, error:
+        except errors.HttpError as error:
             print('An error occurred: {}'.format(error))
 
 
@@ -85,7 +85,7 @@ class Gmail(object):
             msg_str = base64.urlsafe_b64decode(message['raw'].encode('ASCII'))
             mime_msg = email.message_from_string(msg_str)
             return mime_msg
-        except errors.HttpError, error:
+        except errors.HttpError as error:
             print('An error occurred: {}'.format(error))
 
     def get_inbox_messages(self, service, user_id):
@@ -124,9 +124,9 @@ class Gmail(object):
         headers = message['payload']['headers']
 
         simplified_message = {
-            'timestamp' : pytz.utc.localize(datetime.datetime.fromtimestamp(long(message['internalDate'])/1000), is_dst=None).astimezone(pytz.utc),
-            'from' : filter(lambda header: header['name'] == 'From', headers)[0]['value'],
-            'subject' : filter(lambda header: header['name'] == 'Subject', headers)[0]['value'],
+            'timestamp' : pytz.utc.localize(datetime.datetime.fromtimestamp(int(message['internalDate'])/1000), is_dst=None).astimezone(pytz.utc),
+            'from' : list(filter(lambda header: header['name'] == 'From', headers))[0]['value'],
+            'subject' : list(filter(lambda header: header['name'] == 'Subject', headers))[0]['value'],
             'content' : message['snippet']
         }
         return simplified_message

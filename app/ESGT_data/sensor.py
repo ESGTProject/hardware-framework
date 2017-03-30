@@ -4,7 +4,7 @@ File name: sensor.py
 Author: Kairi Kozuma, Boa-Lin Lai
 Date created: 02/17/2017
 Date last modified: 02/28/2017
-Python Version: 2.7.11
+Python Version: 3.6.0
 '''
 import json
 

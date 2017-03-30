@@ -4,8 +4,8 @@
 File name: app.py
 Author: Kairi Kozuma
 Date created: 02/16/2017
-Date last modified: 03/15/2017
-Python Version: 2.7.11
+Date last modified: 03/29/2017
+Python Version: 3.6.0
 '''
 import flask
 from flask import Flask, jsonify, request
@@ -15,9 +15,10 @@ import sqlalchemy
 import json
 import pytz
 import os
-from datetime import datetime
+import pyrebase
 import requests
 import httplib2
+from datetime import datetime
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
@@ -29,8 +30,6 @@ from ESGT_database.database import DatabaseHelper
 
 from ESGT_data import gmail
 from ESGT_data import open_weather_map
-# TODO: Cache in database?
-
 
 class ISODatetimeEncoder(JSONEncoder):
     """Custom ISO format for json encoding of datetime objects"""
@@ -57,6 +56,12 @@ db_helper = None
 
 # Non database helper for other (non database backed up) resources
 nondb_resource_dict = {}
+
+# Firebase global instance
+firebase = None
+
+# Device UUID
+device_uid = None
 
 CLIENT_SECRET_FILE = 'gmail_client_secret.json'
 CREDENTIAL_PATH = './.credentials/gmail-session.json'
@@ -109,15 +114,34 @@ class GmailAPIResource(object):
         self.gmail_client = gmail.Gmail()
 
     def get(self, params={}):
-        # Get credentials from username
-        if "username" not in params:
-            return "required parameter 'username' missing"
-        username = params["username"]
-        credentials = get_stored_credentials(username)
+        #TODO : Have another server to generate credentials?
+
+        google_token_db = "google"
+
+        # Get credentials
+        if "user_uid" not in params:
+            return "required parameter 'user_uid' missing"
+        user_uid = params["user_uid"]
+
+        # If length is less than 60, auth code given
+        # Convert auth code to credential
+        cred = firebase.database().child("users").child(user_uid).child("tokens").child(google_token_db).get().val()
+        if (len(cred) < 60):
+            credentials = client.credentials_from_clientsecrets_and_code(
+            filename=CLIENT_SECRET_FILE,
+            scope=['https://www.googleapis.com/auth/gmail.readonly'],
+            code=cred,
+            redirect_uri=flask.url_for('oauthhandler', _external=True))
+            print (credentials.to_json())
+            firebase.database().child("users").child(user_uid).child("tokens").update({google_token_db:credentials.to_json()})
+        else:
+            # Create credentials from credentials json
+            credentials = client.Credentials.new_from_json(json.loads(json.dumps(cred)))
+
         # Refresh token if expired
         if credentials.access_token_expired:
             credentials.refresh(httplib2.Http())
-            store_credentials(username, credentials)
+            firebase.database().child("users").child(user_uid).child("tokens").update({google_token_db:credentials.to_json()})
 
         # Use limit to limit output
         params = params.to_dict()
@@ -157,19 +181,9 @@ class WeatherAPIResource(object):
         weather_json = json.loads(self.weather_client.get_json(location));
         return jsonify(weather_json)
 
-SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
-APPLICATION_NAME = 'ESGT Backend'
-
 # Deprecated (for debugging only)
-@app.route('/googlelogin')
-def googlelogin():
-    # Attempt new login
-    return flask.redirect(flask.url_for('googlecallback'))
-
-
-# Deprecated (for debugging only)
-@app.route('/googlecallback')
-def googlecallback():
+@app.route('/oauthhandler')
+def oauthhandler():
     flow = client.flow_from_clientsecrets(
         CLIENT_SECRET_FILE,
         scope=SCOPES,
@@ -184,74 +198,11 @@ def googlecallback():
         credentials = flow.step2_exchange(auth_code)
         return flask.redirect(flask.url_for('resource/gmail', _external=True))
 
-
-# POST receiver for mobile application that sends authentication code
-@app.route('/googleauth', methods=['GET', 'POST'])
-def googleauth():
-    if request.method == 'POST':
-        print ('Received', request.json)
-        username = request.json['username']
-        auth_code = request.json['auth_code']
-        # Exchange auth code for access token, refresh token, and ID token
-        credentials = client.credentials_from_clientsecrets_and_code(
-            filename=CLIENT_SECRET_FILE,
-            scope=['https://www.googleapis.com/auth/gmail.readonly',
-                   'profile', 'email'],
-            code=auth_code,
-            redirect_uri=flask.url_for('googlecallback', _external=True))
-        store_credentials(username, credentials)
-        return "successful login"
-    elif request.method == 'GET':
-        print ('Received', request.json)
-        user = request.json['username']
-        credentials = get_stored_credentials(user)
-        if credentials is None:
-            email = credentials.id_token['email']
-            return email
-        else:
-            return 'No valid token'
-    else:
-        return None
-
-
-# Helper method to get stored credentials (token)
-def get_stored_credentials(username):
-    row = db_helper.select_credentials(username)
-    try:
-        print (row[0][0])
-        json = row[0][0]
-        return client.Credentials.new_from_json(json)
-    except IndexError as e:
-        return None
-
-
-# Helper method to store credentials in database (token)
-def store_credentials(username, credentials):
-    json = credentials.to_json();
-    row = db_helper.insert_credentials(username, json)
-
-
 # Configuration endpoint TODO: Authentication of user
-@app.route('/config', methods=['GET', 'POST'])
+@app.route('/uid', methods=['GET'])
 def config():
-    if request.method == 'POST':
-        print ('Received', request.json)
-        user = request.json['username']
-        config = request.json['config']
-        if user is not None and config is not None:
-        db_helper.insert_config(user, config)
-        return 'config POST success'
-        else:
-            return 'config POST failure'
-    elif request.method == 'GET':
-        user = request.args.get('username')
-        if user is not None:
-            row = db_helper.select_config(user)
-            return jsonify(row[0])
-        else:
-            return 'config GET failure'
-    else:
-        return 'Invalid config request'
+    if request.method == 'GET':
+        return jsonify(device_uid)
 
 
 # Resource API endpoint
@@ -286,20 +237,16 @@ def get_resource_list():
 
 if __name__ == '__main__':
     # Instantiate database
-    config = None
+    device_uid = None
     with open('config.json') as json_file:
         config = json.load(json_file)
     if config is None:
         raise IOError("Configuration file 'config.json' not found")
-    user = config['user']
-    password = config['password']
-    host = config['host']
+    user = config['database']['user']
+    password = config['database']['password']
+    host = config['database']['host']
     db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     db_helper.connect()
-
-    # Create credential path
-    if not os.path.exists(os.path.dirname(CREDENTIAL_PATH)):
-        os.makedirs(os.path.dirname(CREDENTIAL_PATH))
 
     # Resources without database backend (route APIs)
     news_api = NewsAPIResource('https://newsapi.org/v1/articles', 'apiKey', config["NEWS_API_KEY"])
@@ -310,5 +257,27 @@ if __name__ == '__main__':
     nondb_resource_dict['gmail'] = gmail_api
     nondb_resource_dict['weather'] = weather_api
 
+    # Setup firebase database
+    firebase = pyrebase.initialize_app(config['firebase'])
+    firebase_db = firebase.database();
+
+    # Device config to send to Firebase
+    config_device = {}
+    config_device['serial_number'] = "SERIALNUMBERTEMP"
+    config_device['user_current'] = ''
+
+    # Get unique ID for device (if not present in config, or if id is not present in firebase)
+    device_list = firebase_db.child("devices").get().val()
+    print (device_list)
+    if ('device_uid' not in config) or (device_list is None) or (config['device_uid'] not in device_list):
+        device = firebase_db.child('devices').push(config_device)
+        config['device_uid'] = device['name']
+        # Write updated config json to file
+        with open('config.json', 'w') as json_file:
+            json.dump(config, json_file)
+
+    # Set global uuid variable
+    device_uid = config['device_uid']
+
     # Run micro server
-    app.run(debug=True, host="0.0.0.0", port=8000)
+    app.run(debug=True, host="0.0.0.0", port=8000, threaded=True)

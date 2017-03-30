@@ -1,8 +1,8 @@
 psycopg2
 flask
-flask-restful
 flask-cors
 pytz
 sqlalchemy
 google-api-python-client
 requests
+pyrebase

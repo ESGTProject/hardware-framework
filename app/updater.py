@@ -4,8 +4,8 @@
 File name: updater.py
 Author: Boa-Lin Lai, Kairi Kozuma
 Date created: 02/20/2017
-Date last modified: 02/28/2017
-Python Version: 2.7.11
+Date last modified: 03/29/2017
+Python Version: 3.6.0
 '''
 
 import logging
