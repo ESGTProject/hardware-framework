@@ -115,14 +115,22 @@ class GmailAPIResource(object):
 
     def get(self, params={}):
         # Get credentials from username
-        if "username" not in params:
-            return "required parameter 'username' missing"
-        username = params["username"]
-        credentials = get_stored_credentials(username)
+        if "token" not in params:
+            return "required parameter 'token' missing"
+        auth_code = params["token"]
+
+        credentials = client.credentials_from_clientsecrets_and_code(
+            filename=CLIENT_SECRET_FILE,
+            scope=['https://www.googleapis.com/auth/gmail.readonly'],
+            code=auth_code,
+            redirect_uri=flask.url_for('oauthhandler', _external=True))
+
+        #credentials = client.Credentials.new_from_json(json)
+        #json = credentials.to_json();
+
         # Refresh token if expired
         if credentials.access_token_expired:
             credentials.refresh(httplib2.Http())
-            store_credentials(username, credentials)
 
         # Use limit to limit output
         params = params.to_dict()
@@ -162,18 +170,9 @@ class WeatherAPIResource(object):
         weather_json = json.loads(self.weather_client.get_json(location));
         return jsonify(weather_json)
 
-SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
-
 # Deprecated (for debugging only)
-@app.route('/googlelogin')
-def googlelogin():
-    # Attempt new login
-    return flask.redirect(flask.url_for('googlecallback'))
-
-
-# Deprecated (for debugging only)
-@app.route('/googlecallback')
-def googlecallback():
+@app.route('/oauthhandler')
+def oauthhandler():
     flow = client.flow_from_clientsecrets(
         CLIENT_SECRET_FILE,
         scope=SCOPES,
@@ -187,53 +186,6 @@ def googlecallback():
         auth_code = flask.request.args.get('code')
         credentials = flow.step2_exchange(auth_code)
         return flask.redirect(flask.url_for('resource/gmail', _external=True))
-
-
-# POST receiver for mobile application that sends authentication code
-@app.route('/googleauth', methods=['GET', 'POST'])
-def googleauth():
-    if request.method == 'POST':
-        print ('Received', request.json)
-        username = request.json['username']
-        auth_code = request.json['auth_code']
-        # Exchange auth code for access token, refresh token, and ID token
-        credentials = client.credentials_from_clientsecrets_and_code(
-            filename=CLIENT_SECRET_FILE,
-            scope=['https://www.googleapis.com/auth/gmail.readonly',
-                   'profile', 'email'],
-            code=auth_code,
-            redirect_uri=flask.url_for('googlecallback', _external=True))
-        store_credentials(username, credentials)
-        return "successful login"
-    elif request.method == 'GET':
-        print ('Received', request.json)
-        user = request.json['username']
-        credentials = get_stored_credentials(user)
-        if credentials is None:
-            email = credentials.id_token['email']
-            return email
-        else:
-            return 'No valid token'
-    else:
-        return None
-
-
-# Helper method to get stored credentials (token)
-def get_stored_credentials(username):
-    row = db_helper.select_credentials(username)
-    try:
-        print (row[0][0])
-        json = row[0][0]
-        return client.Credentials.new_from_json(json)
-    except IndexError as e:
-        return None
-
-
-# Helper method to store credentials in database (token)
-def store_credentials(username, credentials):
-    json = credentials.to_json();
-    row = db_helper.insert_credentials(username, json)
-
 
 # Configuration endpoint TODO: Authentication of user
 @app.route('/uid', methods=['GET'])

@@ -124,9 +124,9 @@ class Gmail(object):
         headers = message['payload']['headers']
 
         simplified_message = {
-            'timestamp' : pytz.utc.localize(datetime.datetime.fromtimestamp(long(message['internalDate'])/1000), is_dst=None).astimezone(pytz.utc),
-            'from' : filter(lambda header: header['name'] == 'From', headers)[0]['value'],
-            'subject' : filter(lambda header: header['name'] == 'Subject', headers)[0]['value'],
+            'timestamp' : pytz.utc.localize(datetime.datetime.fromtimestamp(int(message['internalDate'])/1000), is_dst=None).astimezone(pytz.utc),
+            'from' : list(filter(lambda header: header['name'] == 'From', headers))[0]['value'],
+            'subject' : list(filter(lambda header: header['name'] == 'Subject', headers))[0]['value'],
             'content' : message['snippet']
         }
         return simplified_message
