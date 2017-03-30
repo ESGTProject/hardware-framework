@@ -45,7 +45,7 @@ def main():
         raise IOError("Configuration file 'config.json' not found")
     user = config['database']['user']
     password = config['database']['password']
-    host = config['database']['host'
+    host = config['database']['host']
     db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
