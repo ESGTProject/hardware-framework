@@ -60,8 +60,8 @@ nondb_resource_dict = {}
 # Firebase global instance
 firebase = None
 
-# JSON dictionary from config.json file
-device_uuid = None
+# Device UUID
+device_uid = None
 
 CLIENT_SECRET_FILE = 'gmail_client_secret.json'
 CREDENTIAL_PATH = './.credentials/gmail-session.json'
@@ -163,7 +163,6 @@ class WeatherAPIResource(object):
         return jsonify(weather_json)
 
 SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
-APPLICATION_NAME = 'ESGT Backend'
 
 # Deprecated (for debugging only)
 @app.route('/googlelogin')
@@ -237,10 +236,10 @@ def store_credentials(username, credentials):
 
 
 # Configuration endpoint TODO: Authentication of user
-@app.route('/uuid', methods=['GET'])
+@app.route('/uid', methods=['GET'])
 def config():
     if request.method == 'GET':
-        return jsonify(device_uuid)
+        return jsonify(device_uid)
 
 
 # Resource API endpoint
@@ -275,7 +274,7 @@ def get_resource_list():
 
 if __name__ == '__main__':
     # Instantiate database
-    device_uuid = None
+    device_uid = None
     with open('config.json') as json_file:
         config = json.load(json_file)
     if config is None:
@@ -307,15 +306,15 @@ if __name__ == '__main__':
     # Get unique ID for device (if not present in config, or if id is not present in firebase)
     device_list = firebase_db.child("devices").get().val()
     print (device_list)
-    if ('device_uuid' not in config) or (device_list is None) or (config['device_uuid'] not in device_list):
+    if ('device_uid' not in config) or (device_list is None) or (config['device_uid'] not in device_list):
         device = firebase_db.child('devices').push(config_device)
-        config['device_uuid'] = device['name']
+        config['device_uid'] = device['name']
         # Write updated config json to file
         with open('config.json', 'w') as json_file:
             json.dump(config, json_file)
 
     # Set global uuid variable
-    device_uuid = config['device_uuid']
+    device_uid = config['device_uid']
 
     # Run micro server
-    app.run(debug=True, host="0.0.0.0", port=8000)
+    app.run(debug=True, host="0.0.0.0", port=8000, threaded=True)
