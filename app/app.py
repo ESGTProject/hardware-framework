@@ -237,16 +237,10 @@ def store_credentials(username, credentials):
 
 
 # Configuration endpoint TODO: Authentication of user
-@app.route('/config', methods=['GET'])
+@app.route('/uuid', methods=['GET'])
 def config():
     if request.method == 'GET':
-        user = firebase_db.child('devices').child(device_uuid).child('user_current').get().val()
-        print (user)
-        if (user):
-            user_config = firebase_db.child('users').child(user).get().val()
-        else:
-            user_config = None
-        return jsonify(user_config)
+        return jsonify(device_uuid)
 
 
 # Resource API endpoint
@@ -308,7 +302,6 @@ if __name__ == '__main__':
     # Device config to send to Firebase
     config_device = {}
     config_device['serial_number'] = "SERIALNUMBERTEMP"
-    config_device['users_valid'] = ''
     config_device['user_current'] = ''
 
     # Get unique ID for device (if not present in config, or if id is not present in firebase)
