@@ -114,21 +114,29 @@ class GmailAPIResource(object):
         self.gmail_client = gmail.Gmail()
 
     def get(self, params={}):
-        # Get credentials from username
-        if "token" not in params:
-            return "required parameter 'token' missing"
-        auth_code = params["token"]
 
+
+        #TODO : Have another server to generate credentials?
+        '''
+        auth_code = params["credentials"]
         credentials = client.credentials_from_clientsecrets_and_code(
             filename=CLIENT_SECRET_FILE,
             scope=['https://www.googleapis.com/auth/gmail.readonly'],
             code=auth_code,
             redirect_uri=flask.url_for('oauthhandler', _external=True))
+        print (credentials.to_json())
+        firebase_db.push(credentials.to_json())
+        '''
 
-        #credentials = client.Credentials.new_from_json(json)
-        #json = credentials.to_json();
+        # Get credentials from Firebase if necessary
+        if "credentials" not in params:
+            return "required parameter 'credentials' missing"
 
-        # Refresh token if expired
+        # Create credentials from credentials json
+        credential_json = params["credentials"]
+        credentials = client.Credentials.new_from_json(json.loads(credential_json))
+
+        # Refresh token if expire
         if credentials.access_token_expired:
             credentials.refresh(httplib2.Http())
 
