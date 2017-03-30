@@ -43,9 +43,9 @@ def main():
         config = json.load(json_file)
     if config is None:
         raise IOError("Configuration file 'config.json' not found")
-    user = config['user']
-    password = config['password']
-    host = config['host']
+    user = config['database']['user']
+    password = config['database']['password']
+    host = config['database']['host'
     db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
