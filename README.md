@@ -1,20 +1,8 @@
 #GATECH 2017 Spring Senior Design Project
 
-## Setting up:
-
-1. Install [Docker] (https://www.docker.com/).
-
-2. `cd` into project root directory.
-
-3. Run `docker-compose build` to build the docker container images.
-
-3. Run `docker-compose run app /usr/local/bin/python setup.py --rm` to build the initial database.
-    * To start with a fresh database, run the following:
-        * `docker-compose run app /usr/local/bin/python setup.py clean --rm`
-4. Run `docker-compose up -d` to launch containers as background daemons.
+## Setup (TODO)
 
 ## API (replace <host> with actual host)
-
 1. Resource endpoints
     Get list of resource endpoints:
     * `http://<host>:8000/resource`
@@ -67,6 +55,19 @@ DEPRECATED (This is left for development purposes)
 1. For Google authorization, go to http://<host>:8000/googlelogin
     * Input username and password information, and accept the access
     * Now go to http://<host>/resource/gmail for list of emails in inbox
+
+## Setting up with Docker (DEPRECATED, not updated for Python 3.6.0):
+
+1. Install [Docker] (https://www.docker.com/).
+
+2. `cd` into project root directory.
+
+3. Run `docker-compose build` to build the docker container images.
+
+3. Run `docker-compose run app /usr/local/bin/python setup.py --rm` to build the initial database.
+    * To start with a fresh database, run the following:
+        * `docker-compose run app /usr/local/bin/python setup.py clean --rm`
+4. Run `docker-compose up -d` to launch containers as background daemons.
 
 ##Trouble shooting macOS
 ### 1. To install psycopg2, install postgresql first
