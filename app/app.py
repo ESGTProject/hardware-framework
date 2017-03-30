@@ -117,6 +117,11 @@ class GmailAPIResource(object):
 
 
         #TODO : Have another server to generate credentials?
+<<<<<<< HEAD
+=======
+        firebase_db = firebase.database().child("users").child("br74MAYFxnO5k1zepGN5y4g4Zdd2").child("tokens");
+        firebase_db = firebase.database();
+>>>>>>> ca111ec6f64d047284319b97ed742ec0d740d631
         '''
         auth_code = params["credentials"]
         credentials = client.credentials_from_clientsecrets_and_code(
