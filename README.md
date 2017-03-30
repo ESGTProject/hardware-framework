@@ -27,8 +27,10 @@
     GmailAPI (requires Android App):
     * Gmail requires authorization to access Gmail services via OAuth
     * The Android Application allows users to send OAuth tokens to the backend server
-    * After successful authorization, the API endpoint to access is at (replace USERNAME with email)
-        - `http://<host>:8000/resource/gmail?username=<username>`
+    * After successful authorization, the API endpoint to access is at
+        - `http://<host>:8000/resource/gmail?user_uid=<user_uid>`
+    * `?user_uid=<user_uid>` For `/resource/gmail` endpoint (REQUIRED)
+        - `user_uid` is the unique identifier for the current user
 
 2. Unique ID
     Get the unique id (UID) for the device
@@ -45,16 +47,12 @@
             - http://<host>:8000
             - http://your-domain-name:8000
         * Add the following to the authorized redirect URIs (Note that this is for DEPRECATED feature of logging in through web!)
-            - http://<host>:8000/googlecallback
-            - http://your-domain-name:8000/googlecallback
+            - http://<host>:8000/oauthhandler
+            - http://your-domain-name:8000/oauthhandler
     * Click create to finish
     * Click on the download icon in the far right to download the client secret json
     * Rename the secret to "gmail_client_secret.json" and put it in /app directory of the project folder
 
-DEPRECATED (This is left for development purposes)
-1. For Google authorization, go to http://<host>:8000/googlelogin
-    * Input username and password information, and accept the access
-    * Now go to http://<host>/resource/gmail for list of emails in inbox
 
 ## Setting up with Docker (DEPRECATED, not updated for Python 3.6.0):
 
