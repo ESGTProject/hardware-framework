@@ -114,36 +114,34 @@ class GmailAPIResource(object):
         self.gmail_client = gmail.Gmail()
 
     def get(self, params={}):
-
-
         #TODO : Have another server to generate credentials?
-<<<<<<< HEAD
-=======
-        firebase_db = firebase.database().child("users").child("br74MAYFxnO5k1zepGN5y4g4Zdd2").child("tokens");
-        firebase_db = firebase.database();
->>>>>>> ca111ec6f64d047284319b97ed742ec0d740d631
-        '''
-        auth_code = params["credentials"]
-        credentials = client.credentials_from_clientsecrets_and_code(
+
+        google_token_db = "google"
+
+        # Get credentials
+        if "user_uid" not in params:
+            return "required parameter 'user_uid' missing"
+        user_uid = params["user_uid"]
+
+        # If length is less than 60, auth code given
+        # Convert auth code to credential
+        cred = firebase.database().child("users").child(user_uid).child("tokens").child(google_token_db).get().val()
+        if (len(cred) < 60):
+            credentials = client.credentials_from_clientsecrets_and_code(
             filename=CLIENT_SECRET_FILE,
             scope=['https://www.googleapis.com/auth/gmail.readonly'],
-            code=auth_code,
+            code=cred,
             redirect_uri=flask.url_for('oauthhandler', _external=True))
-        print (credentials.to_json())
-        firebase_db.push(credentials.to_json())
-        '''
+            print (credentials.to_json())
+            firebase.database().child("users").child(user_uid).child("tokens").update({google_token_db:credentials.to_json()})
+        else:
+            # Create credentials from credentials json
+            credentials = client.Credentials.new_from_json(json.loads(json.dumps(cred)))
 
-        # Get credentials from Firebase if necessary
-        if "credentials" not in params:
-            return "required parameter 'credentials' missing"
-
-        # Create credentials from credentials json
-        credential_json = params["credentials"]
-        credentials = client.Credentials.new_from_json(json.loads(credential_json))
-
-        # Refresh token if expire
+        # Refresh token if expired
         if credentials.access_token_expired:
             credentials.refresh(httplib2.Http())
+            firebase.database().child("users").child(user_uid).child("tokens").update({google_token_db:credentials.to_json()})
 
         # Use limit to limit output
         params = params.to_dict()
