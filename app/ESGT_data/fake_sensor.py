@@ -4,7 +4,7 @@ File name: fake_sensor.py
 Author: Kairi Kozuma
 Date created: 02/28/2017
 Date last modified: 02/28/2017
-Python Version: 2.7.11
+Python Version: 3.6.0
 '''
 from .sensor import Sensor
 import random

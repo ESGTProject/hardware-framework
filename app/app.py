@@ -4,8 +4,8 @@
 File name: app.py
 Author: Kairi Kozuma
 Date created: 02/16/2017
-Date last modified: 03/15/2017
-Python Version: 2.7.11
+Date last modified: 03/29/2017
+Python Version: 3.6.0
 '''
 import flask
 from flask import Flask, jsonify, request
