@@ -1,0 +1,37 @@
+Format: 
+
++ (Sensor wire name / pin #) - (mbed pin)
+
+---------------------------------------------------------------------------------------------------------------------------
+
+Humidity / Temp Sensor Wiring:
+
++ Pin 1 - Vout (3.3v)
++ Pin 2 - Data (p21)
++ Pin 3 - NC (not connected)
++ Pin 4 - GND
+
++ 4.7 kOhm resistor b/t VCC and Data
++ https://developer.mbed.org/cookbook/Grove-temperature--humidity-sensors
+
+---------------------------------------------------------------------------------------------------------------------------
+
+Light Sensor Wiring:
+
++ Lead 1 - GND
++ Lead 2 - Data (p15)
+
++ Note: Orientation of leads doesn't matter
++ 10 kOhm resistor in PARALLEL b/t Lead 2 and Vout (3.3v)
++ https://developer.mbed.org/users/4180_1/notebook/using-a-photocell-to-determine-light-levels/
+
+---------------------------------------------------------------------------------------------------------------------------
+
+Sharp IR Sensor (Using 3-pin connector cable):
+
++ Yellow Wire - Data (p16)
++ Black Wire - GND
++ Red Wire - Vout (3.3v)
+
++ 10 microfarad capacitor b/t black and red wires
++ https://developer.mbed.org/users/pharp6/notebook/sharp-ir-sensor-displayed-through-virtual-com-port/
