@@ -4,7 +4,7 @@ Format:
 
 ---------------------------------------------------------------------------------------------------------------------------
 
-Humidity / Temp Sensor Wiring:
+Humidity / Temp Sensor Wiring (HTU21D-F):
 
 + Pin 1 - Vout (3.3v)
 + Pin 2 - Data (p21)
