@@ -24,7 +24,7 @@ class Sensor(object):
             name=self.name,
             serialnumber=self.serialnumber,
             units=self.units,
-            value=self.value
+            value=value_in_units
         )
         return json.dumps(data)    
 

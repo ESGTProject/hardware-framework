@@ -6,7 +6,7 @@
 import RPi.GPIO as GPIO
 import time
 import serial
-from ESGT_sensor_class import Sensor
+from sensor import Sensor
 #function w/ # data pts to read and at what frequency (reads per sec?)
 # private var for chaning time interval 
 
@@ -60,13 +60,16 @@ class ESGT_sensor_info(object):
     """
       Define sensors featuers on the followig part.. init once, change the value upon request
     """
-    def light_lambda(self, x): # func from Hamblen Cookbook. Assumes 10k resistor, 3.3V source 
-        return (((3.3 * 500) / x) - 500) / 10 # light measured in Lux
+    def light_lambda(self, vout): # func from Hamblen Cookbook. Assumes 10k resistor, 3.3V source 
+        # resistor 
+        resistor1 = 3.3  # in k
+        light_sensor_resistor = (10*vout)/(resistor1*(1-vout)) # ofr caclulate 
+        return 500 / light_sensor_resistor # light measured in Lux associate withohm
 		
 	"""
-	# func from TMP36 temp sensor from Hamblen cookbook... sensor may not be necessary...
-	# ... the HTU21D humidity sensor can ALSO return temperature. 2 birds, 1 stone
-	def temperature_lambda(self, x):
+    	# func from TMP36 temp sensor from Hamblen cookbook... sensor may not be necessary...
+   		# ... the HTU21D humidity sensor can ALSO return temperature. 2 birds, 1 stone
+		def temperature_lambda(self, x):
 		temp = ((x * 3.3) - 0.5) * 100 # in Celsius
 		return (temp * 9 / 5) + 32 # convert to Fahrenheit
 	"""
@@ -108,4 +111,4 @@ class ESGT_sensor_info(object):
            
 if __name__ == '__main__':
      s = ESGT_sensor_info()
-     s.get_json(0.5,5)
+     s.get_json(0.5,20)
