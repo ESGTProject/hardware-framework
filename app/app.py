@@ -29,6 +29,7 @@ import ESGT_database
 from ESGT_database.database import DatabaseHelper
 
 from ESGT_data import gmail
+from ESGT_data import google_calendar
 from ESGT_data import open_weather_map
 
 class ISODatetimeEncoder(JSONEncoder):
@@ -64,8 +65,6 @@ firebase = None
 device_uid = None
 
 CLIENT_SECRET_FILE = 'gmail_client_secret.json'
-CREDENTIAL_PATH = './.credentials/gmail-session.json'
-
 
 def flatten(row):
     """Adds timestamp to same row as json object stored in row.value
@@ -109,19 +108,12 @@ class NewsAPIResource(object):
             return jsonify(None)
 
 
-class GmailAPIResource(object):
+class GoogleAPIResource(object):
     def __init__(self):
-        self.gmail_client = gmail.Gmail()
+        self.credentials = None
 
-    def get(self, params={}):
-        #TODO : Have another server to generate credentials?
-
+    def check_credentials(self, user_uid):
         google_token_db = "google"
-
-        # Get credentials
-        if "user_uid" not in params:
-            return "required parameter 'user_uid' missing"
-        user_uid = params["user_uid"]
 
         # If length is less than 60, auth code given
         # Convert auth code to credential
@@ -143,6 +135,21 @@ class GmailAPIResource(object):
             credentials.refresh(httplib2.Http())
             firebase.database().child("users").child(user_uid).child("tokens").update({google_token_db:credentials.to_json()})
 
+        self.credentials = credentials
+
+
+class GmailAPIResource(GoogleAPIResource):
+    def __init__(self):
+        self.gmail_client = gmail.Gmail()
+
+    def get(self, params={}):
+        # Get credentials
+        if "user_uid" not in params:
+            return "required parameter 'user_uid' missing"
+        user_uid = params["user_uid"]
+        # Check credentials
+        self.check_credentials(user_uid)
+
         # Use limit to limit output
         params = params.to_dict()
         limit = DEFAULT_RESOURCE_LENGTH
@@ -150,16 +157,54 @@ class GmailAPIResource(object):
             limit = int(params['limit'])
             del params['limit']
 
-        # Attempt to get gmail inbox
+         # Attempt to get gmail inbox
         try:
-            if credentials is None or credentials.invalid:
+            if self.credentials is None or self.credentials.invalid:
                 return "Invalid Credential or Token Timeout"
             else:
-                mail_list = self.gmail_client.get_json(credentials)
-                mail_list = mail_list if len(mail_list) <= limit else mail_list[:limit]
-                return jsonify(mail_list)
+                mail_list = self.gmail_client.get_json(self.credentials)
+                if mail_list is not None:
+                    mail_list = mail_list if len(mail_list) <= limit else mail_list[:limit]
+                    return jsonify(mail_list)
+                else:
+                    return "No emails"
+
         except HttpAccessTokenRefreshError as e:
             return "Invalid Token"
+
+class GoogleCalendarAPIResource(GoogleAPIResource):
+    def __init__(self):
+        self.google_calendar_client = google_calendar.GoogleCalendar()
+
+    def get(self, params={}):
+        # Get credentials
+        if "user_uid" not in params:
+            return "required parameter 'user_uid' missing"
+        user_uid = params["user_uid"]
+        # Check credentials
+        self.check_credentials(user_uid)
+
+        # Use limit to limit output
+        params = params.to_dict()
+        limit = DEFAULT_RESOURCE_LENGTH
+        if 'limit' in params:
+            limit = int(params['limit'])
+            del params['limit']
+
+         # Attempt to get gmail inbox
+        try:
+            if self.credentials is None or self.credentials.invalid:
+                return "Invalid Credential or Token Timeout"
+            else:
+                event_list = self.google_calendar_client.get_json(self.credentials)
+                if event_list is not None:
+                    event_list = event_list if len(event_list) <= limit else event_list[:limit]
+                    return jsonify(event_list)
+                else:
+                    return "No events"
+        except HttpAccessTokenRefreshError as e:
+            return "Invalid Token"
+
 
 class WeatherAPIResource(object):
     def __init__(self, api_key):
@@ -251,10 +296,12 @@ if __name__ == '__main__':
     # Resources without database backend (route APIs)
     news_api = NewsAPIResource('https://newsapi.org/v1/articles', 'apiKey', config["NEWS_API_KEY"])
     gmail_api = GmailAPIResource()
+    calendar_api = GoogleCalendarAPIResource()
     weather_api = WeatherAPIResource(config["OWM_API_KEY"])
 
     nondb_resource_dict['news'] = news_api
     nondb_resource_dict['gmail'] = gmail_api
+    nondb_resource_dict['calendar'] = calendar_api
     nondb_resource_dict['weather'] = weather_api
 
     # Setup firebase database
