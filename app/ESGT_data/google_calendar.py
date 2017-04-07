@@ -54,7 +54,8 @@ class GoogleCalendar(object):
             'description' : event['description'] if 'description' in event else '',
             'location' : event['location'] if 'location' in event else '',
             'created' : event['created'],
-            'updated' : event['updated']
+            'updated' : event['updated'],
+            'all_day' : True if 'date' in event['start'] else False
         }
         return simplified_event
 
