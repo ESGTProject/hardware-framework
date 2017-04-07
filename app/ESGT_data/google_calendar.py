@@ -51,6 +51,8 @@ class GoogleCalendar(object):
             'summary' : event['summary'],
             'start' : event['start']['dateTime'] if 'dateTime' in event['start'] else event['start']['date'],
             'end' : event['end']['dateTime'] if 'dateTime' in event['end'] else event['end']['date'],
+            'description' : event['description'] if 'description' in event else '',
+            'location' : event['location'] if 'location' in event else '',
             'created' : event['created'],
             'updated' : event['updated']
         }
