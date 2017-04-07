@@ -10,12 +10,11 @@ Python Version: 3.6.0
 
 import logging
 logging.basicConfig()
+import sqlalchemy
+import json
 from ESGT_data.mbed_sensor import MbedSensor
 from ESGT_data.sensor import Sensor
 from ESGT_data.fake_sensor import FakeSensor
-import sqlalchemy
-import json
-
 import ESGT_database
 from ESGT_database.database import DatabaseHelper
 
@@ -49,15 +48,17 @@ def main():
     db_helper = DatabaseHelper(user, password, host, ESGT_database.database.DB_ESGT)
     db_helper.connect()
 
-    #mbed = MbedSensor()
+    mbed = MbedSensor()
 
     # Initialize job list
     job_list = [
-        #{'name': 'light_sensor', 'func': mbed.get_json, 'sec': 5}, #TODO: Dynamically handle if not on Raspberry Pi
+        Job('light', mbed.get_json_light, 5),
+        Job('humidity', mbed.get_json_humidity, 7),
+        Job('temperature', mbed.get_json_temperature, 10)
     ]
 
     # Create fake data for testing #TODO: Handle dynamically
-    fake_data = True
+    fake_data = False
     if fake_data:
         light_sensor = FakeSensor('light', 'HAL9000', 'lux', lambda x: x * 10000)
         temperature_sensor = FakeSensor('temperature', 'TMPSNSR451', 'degreesC', lambda x: x * 32)

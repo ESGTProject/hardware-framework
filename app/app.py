@@ -265,6 +265,7 @@ def get_resource(resource):
         rows = db_helper.select(resource, limit)
         if rows is not None:
             elem_array = list(map(flatten, rows))
+            print("ELEMENTS:",len(elem_array))
             return jsonify(elem_array)
 
 
