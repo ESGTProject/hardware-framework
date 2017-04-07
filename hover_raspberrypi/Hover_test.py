@@ -1,6 +1,6 @@
 import time
 import subprocess
-from Hover_library import Hover
+from Hover_library2 import Hover
 
 hover = Hover(address=0x42, ts=23, reset=24)
 
@@ -26,9 +26,9 @@ try:
                 print direction
 
                 if direction == 'swipe_left':
-                    print 'left'
+                    print 'leeeeeeff'
                 elif direction == 'swipe_right':
-                    print 'right'
+                    print 'rgiggggt'
 
             # Release the ts pin until Hover is ready to send the next event
             hover.setRelease()

@@ -77,17 +77,29 @@ class Hover(object):
 
   def getEvent(self):
 
-    busData = bus.read_i2c_block_data(self.address,0,18)
-
+    busData = bus.read_i2c_block_data(self.address,0,26)
     gestureEvent = busData[10]
     touchEvent = (((busData[14] & 0b11100000) >> 5) | ((busData[15] & 0b00000011) << 3))
 
     if gestureEvent > 1:
       event = "{:08b}".format((1<<(busData[10]-1)) | 0b00100000)
+      print(self.readGestureData(busData))
       return event
     elif touchEvent > 0:
       event = "{:08b}".format(touchEvent | 0b01000000)
       return event
+
+  def readGestureData(self, busData):
+    gType = {
+      2: 'Right Swipe',
+      3: 'Left Siwpe',
+      4: 'Up Swipe',
+      5: 'Down Swipe'
+    }.get(busData[10])
+    if (busData[7] & 0x02):
+      print('Hi')
+      gType = 'Airspin'
+    return gType
 
 
   def setRelease(self):
