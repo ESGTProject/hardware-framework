@@ -15,7 +15,7 @@ float vcc = 3.3;
 const int number_of_sensor = 6;
 AnalogIn light(p15); // Light sensor
 DHT11 humid(p21); // pwmout... From: https://developer.mbed.org/users/s_inoue_mbed/code/DHT11_Hello_World/file/da7b1c04a659/main.cpp
-AnalogIn IR(p16); // Sharp IR 10 - 80 cm
+AnalogIn sensor3(p16); // Sharp IR 10 - 80 cm
 AnalogIn sensor4(p18);
 AnalogIn sensor5(p19);
 AnalogIn sensor6(p20);
@@ -36,7 +36,7 @@ void get_DHT() {
 
 void get_other_sensors() {
   sensor_buffer[0] = light.read();
-  sensor_buffer[3] = IR.read();
+  sensor_buffer[3] = sensor3.read();
 }
 
 void DHT_thread() {
@@ -61,7 +61,7 @@ int main() {
     if (pc.readable()) {
       reqData = pc.getc(); // blocking
       if (reqData == '0') {        
-       pc.printf("Light, Humidity, Temperature (F), IR, DISCONNECTED, DISCONNECTED");      
+       pc.printf("Light, Humidity, Temperature (F), DISCONNECTED, DISCONNECTED, DISCONNECTED");      
       } else if (reqData == '1') { 
         for (int i = 0; i < number_of_sensor; i++) {
           pc.printf("%4.4f",sensor_buffer[i]);
