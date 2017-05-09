@@ -1,6 +1,28 @@
-#GATECH 2017 Spring Senior Design Project
+## Usage
+1. Clone the repository with
+2. Open a Terminal, then `cd` into the `/app` directory.
+3. Run the flask application with the command:
+`python3 app.py`
+4. Run the updater script the with the command:
+`sudo python updater.py`
 
-## Setup (TODO)
+## Setup
+* For Gmail support, follow the steps below
+    * Log into the [Google API console] (https://console.developers.google.com)
+    * Create a new project if one does not exist (Name it whatever you wish)
+    * Click on Credentials in the left pane
+    * Click on the "Create credentials" button and select "OAuth client ID"
+    * Choose "Web application" for application type
+        * Name it whatever you wish
+        * Add the following to authorized JavaScript origins (using your domain name)
+            - http://<host>:8000
+            - http://your-domain-name:8000
+        * Add the following to the authorized redirect URIs (Note that this is for DEPRECATED feature of logging in through web!)
+            - http://<host>:8000/oauthhandler
+            - http://your-domain-name:8000/oauthhandler
+    * Click create to finish
+    * Click on the download icon in the far right to download the client secret json
+    * Rename the secret to "gmail_client_secret.json" and put it in /app directory of the project folder
 
 ## API (replace <host> with actual host)
 1. Resource endpoints
@@ -36,37 +58,6 @@
     Get the unique id (UID) for the device
     * `http://<host>:8000/uid`
 
-3. For Gmail support, follow the steps below
-    * Log into the [Google API console] (https://console.developers.google.com)
-    * Create a new project if one does not exist (Name it whatever you wish)
-    * Click on Credentials in the left pane
-    * Click on the "Create credentials" button and select "OAuth client ID"
-    * Choose "Web application" for application type
-        * Name it whatever you wish
-        * Add the following to authorized JavaScript origins (using your domain name)
-            - http://<host>:8000
-            - http://your-domain-name:8000
-        * Add the following to the authorized redirect URIs (Note that this is for DEPRECATED feature of logging in through web!)
-            - http://<host>:8000/oauthhandler
-            - http://your-domain-name:8000/oauthhandler
-    * Click create to finish
-    * Click on the download icon in the far right to download the client secret json
-    * Rename the secret to "gmail_client_secret.json" and put it in /app directory of the project folder
-
-
-## Setting up with Docker (DEPRECATED, not updated for Python 3.6.0):
-
-1. Install [Docker] (https://www.docker.com/).
-
-2. `cd` into project root directory.
-
-3. Run `docker-compose build` to build the docker container images.
-
-3. Run `docker-compose run app /usr/local/bin/python setup.py --rm` to build the initial database.
-    * To start with a fresh database, run the following:
-        * `docker-compose run app /usr/local/bin/python setup.py clean --rm`
-4. Run `docker-compose up -d` to launch containers as background daemons.
-
 ##Trouble shooting macOS
 ### 1. To install psycopg2, install postgresql first
 `brew install postgresql`
@@ -97,4 +88,18 @@ local   all             all                                     trust
 host    all             all             <host>/32            trust
 host    all             all             ::1/128                 trust
 ```
+
+
+## Setting up with Docker (DEPRECATED, not updated for Python 3.6.0):
+
+1. Install [Docker] (https://www.docker.com/).
+
+2. `cd` into project root directory.
+
+3. Run `docker-compose build` to build the docker container images.
+
+3. Run `docker-compose run app /usr/local/bin/python setup.py --rm` to build the initial database.
+    * To start with a fresh database, run the following:
+        * `docker-compose run app /usr/local/bin/python setup.py clean --rm`
+4. Run `docker-compose up -d` to launch containers as background daemons.
 
